@@ -1,5 +1,7 @@
 # remarque
 
+<img width="2009" height="1271" alt="image" src="https://github.com/user-attachments/assets/cc8c27dd-23e6-43d5-968d-897d46b26973" />
+
 remarque is a terminal UI for reviewing uncommitted changes, built for working with
 AI coding agents. You get a pull-request-style review over your working diff: a
 side-by-side view where you can leave comments on specific lines, and the agent that
