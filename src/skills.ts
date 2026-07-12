@@ -7,14 +7,17 @@ export function bundledRoot(): string {
   return path.join(__dirname, "..");
 }
 
-function npxBin(): string {
-  return process.platform === "win32" ? "npx.cmd" : "npx";
+const isWindows = process.platform === "win32";
+
+function quoteArg(arg: string): string {
+  return /[\s"]/.test(arg) ? `"${arg.replace(/"/g, '\\"')}"` : arg;
 }
 
 export function runSkills(args: string[]): number {
-  const result = spawnSync(npxBin(), ["--yes", SKILLS_PKG, "add", bundledRoot(), ...args], {
-    stdio: "inherit",
-  });
+  const argv = ["--yes", SKILLS_PKG, "add", bundledRoot(), ...args];
+  const result = isWindows
+    ? spawnSync("npx", argv.map(quoteArg), { stdio: "inherit", shell: true })
+    : spawnSync("npx", argv, { stdio: "inherit" });
   if (result.error) {
     const err = result.error as NodeJS.ErrnoException;
     const hint = err.code === "ENOENT" ? " (is Node/npx installed and on your PATH?)" : "";
