@@ -2,35 +2,13 @@
 
 <img width="2009" height="1271" alt="image" src="https://github.com/user-attachments/assets/cc8c27dd-23e6-43d5-968d-897d46b26973" />
 
-remarque is a terminal UI for reviewing uncommitted changes, built for working with
-AI coding agents. You get a pull-request-style review over your working diff: a
-side-by-side view where you can leave comments on specific lines, and the agent that
-wrote the code reads them, makes fixes, and replies inline. You can also run it in
-the other direction and have an agent review your diff before you push.
+Review your agent's uncommitted changes in the terminal, like a pull request.
+Leave comments on the diff, and the agent that wrote the code fixes what you
+flagged and replies inline. Works the other way too: ask the agent to review
+your diff before you push.
 
-It works with any agent that can run shell commands (Claude Code, for example),
-and it's a plain npm package with no native binaries.
-
-## What makes it different
-
-There are plenty of tools that show you a nice diff of what your agent just did,
-and some let you jot down notes for the agent to pick up when you close the
-viewer. remarque treats the review as a conversation instead. A comment is a
-thread with a state (open, resolved, or dismissed), you and the agent both write
-into the same review, the panel updates live while the agent works, and the whole
-exchange is saved as a session you can reopen later.
-
-Two design choices follow from that:
-
-- Comments are anchored to the content they describe (a blob sha plus the
-  surrounding lines), not to line numbers. The agent will keep editing the files
-  your comments sit on, so comments have to move with the code. When the code a
-  comment refers to is gone entirely, it's marked outdated rather than left
-  pointing at the wrong line.
-- The review itself lives in a small CLI with a documented JSON contract, and the
-  TUI is just one front end for it. Any agent that can run shell commands can
-  drive a review, and you can build your own front end (web, Neovim) over the
-  same data.
+Works with any agent that can run shell commands (Claude Code, for example).
+Plain npm package, no native binaries.
 
 ## Install
 
@@ -46,10 +24,11 @@ remarque talks to your agent through three skills. Install them once:
 remarque skills add
 ```
 
-You'll be asked which agent to install into. The three skills are
-`remarque-review` (the agent reviews your diff and leaves comments),
-`remarque-address` (the agent fixes and replies to comments you left), and
-`remarque-rereview` (the agent checks whether earlier comments have been handled).
+You'll be asked which agent to install into. The three skills:
+
+- `remarque-review`: the agent reviews your diff and leaves comments
+- `remarque-address`: the agent fixes and replies to comments you left
+- `remarque-rereview`: the agent checks whether earlier comments have been handled
 
 ## Usage
 
@@ -154,19 +133,24 @@ For front ends and agents: `state`, `resolve-anchors`, `watch`.
 Every verb takes `--json`. Agent-authored actions go through the
 `remarque agent …` variant, which the skills handle for you.
 
-## For tool builders
+## Design
 
-remarque is a small engine behind a documented CLI/JSON contract, so you can drive
-it from any agent or build your own front end on the same data.
+A comment in remarque is a thread with a state (open, resolved, or dismissed).
+You and the agent both write into the same review, the panel updates live while
+the agent works, and the exchange is saved as a session you can reopen later.
 
-Anchoring works by pinning each comment to content (blob sha plus surrounding
-lines) and re-resolving it to its current line on every read. When the code a
-comment referred to is gone, the comment is marked `outdated` rather than moved
-somewhere misleading.
+Comments are anchored to content, not line numbers: each one is pinned to a blob
+sha plus its surrounding lines and re-resolved to its current line on every read.
+The agent keeps editing the files your comments sit on, so they have to move with
+the code. When the code a comment refers to is gone, it's marked `outdated`
+rather than moved somewhere misleading.
 
-The `--json` output and the on-disk store share one versioned schema
-(`schemaVersion`). Writes are atomic and lock-guarded, so an agent and a front end
-can write at the same time without corrupting anything.
+The TUI is just one front end. The engine is a small CLI with a documented JSON
+contract, so any agent can drive it and you can build a different front end
+(web, Neovim) on the same data. The `--json` output and the on-disk store share
+one versioned schema (`schemaVersion`), and writes are atomic and lock-guarded,
+so an agent and a front end can write at the same time without corrupting
+anything.
 
 You can also embed it instead of shelling out:
 
