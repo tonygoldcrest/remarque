@@ -1,0 +1,59 @@
+{
+  "name": "remarque",
+  "version": "0.1.0",
+  "description": "Agent- and front-end-agnostic code-review engine: comment threads with stable anchoring over a CLI/JSON contract.",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "remarque": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "prepare": "tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.5.2",
+    "commander": "^12.1.0",
+    "ink": "^3",
+    "lowlight": "^1",
+    "proper-lockfile": "^4.1.2",
+    "react": "^17"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^20.14.0",
+    "@types/proper-lockfile": "^4.1.4",
+    "@types/react": "^17",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "ink-testing-library": "^2",
+    "prettier": "^3.9.5",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^2.0.0"
+  }
+}
