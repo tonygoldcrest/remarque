@@ -196,8 +196,8 @@ export function App({ review }: { review: Review }): React.ReactElement {
       return cycleFocus();
     }
 
-    if (key.upArrow || key.downArrow) {
-      return viewport.move(key.upArrow ? -1 : 1);
+    if (key.upArrow || key.downArrow || ch === "j" || ch === "k") {
+      return viewport.move(key.upArrow || ch === "k" ? -1 : 1);
     }
 
     if (ch === "-") {
