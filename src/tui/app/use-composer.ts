@@ -3,6 +3,7 @@ import type { Key } from "ink";
 
 import type { Review } from "../../review";
 import type { Composer, ComposerTarget } from "../types";
+import { editValue } from "./helpers";
 
 interface ComposerArgs {
   review: Review;
@@ -57,15 +58,7 @@ export function useComposer({ review, onSubmitted, onError }: ComposerArgs) {
       return true;
     }
 
-    if (key.backspace || key.delete) {
-      setComposer((p) => (p ? { ...p, value: p.value.slice(0, -1) } : p));
-
-      return true;
-    }
-
-    if (ch && !key.ctrl && !key.meta) {
-      setComposer((p) => (p ? { ...p, value: p.value + ch } : p));
-    }
+    setComposer((p) => (p ? { ...p, value: editValue(p.value, ch, key) } : p));
 
     return true;
   };

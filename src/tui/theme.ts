@@ -3,7 +3,7 @@ export default {
   delBg: "#2a1518",
   addFg: "#3fb950",
   delFg: "#f85149",
-  cursorBg: "#283a55",
+  cursorBg: "#393836",
   fileSelBg: "#1a1f26",
   hunk: "#7d8590",
   comment: "#e6edf3",
@@ -11,4 +11,5 @@ export default {
   warn: "#d29922",
   border: "#6e7681",
   borderActive: "#2f81f7",
+  sectionTitle: "#79c0ff",
 };

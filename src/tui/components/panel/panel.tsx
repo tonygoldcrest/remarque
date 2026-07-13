@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { selectionKey, type DisplayRow, type FileEntry } from "../../model";
+import { selectionKey, type DisplayRow, type FileSection } from "../../model";
 import theme from "../../theme";
 import { fit } from "../helpers";
 import { langForFile } from "../../highlight";
@@ -13,8 +13,7 @@ import { paneWidths, contentHeight } from "../../helpers";
 interface Props {
   base: string;
   compare: string;
-  files: FileEntry[];
-  fileIndex: number;
+  sections: FileSection[];
   currentFile: string | null;
   rows: DisplayRow[];
   rowIndex: number;
@@ -28,8 +27,40 @@ interface Props {
   message?: string | null;
 }
 
+function fileTree(sections: FileSection[], currentFile: string | null, width: number) {
+  const nodes: React.ReactElement[] = [];
+
+  for (const section of sections) {
+    if (section.title) {
+      if (nodes.length > 0) {
+        nodes.push(<Text key={`${section.title}-space`}> </Text>);
+      }
+
+      nodes.push(
+        <Text key={section.title} color={theme.sectionTitle} bold>
+          {fit(section.title, width)}
+        </Text>,
+      );
+    }
+
+    for (const entry of section.files) {
+      nodes.push(
+        <FileRow
+          key={entry.file}
+          entry={entry}
+          selected={entry.file === currentFile}
+          width={width}
+          indent={section.title ? 1 : 0}
+        />,
+      );
+    }
+  }
+
+  return nodes;
+}
+
 export function Panel(props: Props): React.ReactElement {
-  const { files, fileIndex, rows, rowIndex, focus, width, height } = props;
+  const { sections, rows, rowIndex, focus, width, height } = props;
 
   const { filesW, removedW, addedW } = paneWidths(width);
 
@@ -45,42 +76,28 @@ export function Panel(props: Props): React.ReactElement {
   const isSelected = (row: DisplayRow, idx: number) =>
     cursorGroup != null && selectionKey(row, idx) === cursorGroup;
 
+  const fileCount = sections.reduce((n, s) => n + s.files.length, 0);
+  const tree = fileTree(sections, props.currentFile, filesW - 2);
   const paneBorder = (f: Focus) => (focus === f ? theme.borderActive : theme.border);
 
   return (
     <Box flexDirection="column" width={width} height={height}>
       <Box height={1}>
         <Text color="cyan" bold>
-          {fit(
-            ` remarque — ${props.base}..${props.compare}  (${files.filter((f) => !f.general).length} files)`,
-            width,
-          )}
+          {fit(` remarque — ${props.base}..${props.compare}  (${fileCount} files)`, width)}
         </Text>
       </Box>
 
       <Box height={bodyH}>
-        <Box
-          width={filesW}
-          borderStyle="round"
-          borderColor={paneBorder("files")}
-          flexDirection="column"
-        >
-          {files.length === 0 ? (
-            <Text color={theme.hunk}>(no files)</Text>
-          ) : (
-            files
-              .slice(0, contentH)
-              .map((f, i) => (
-                <FileRow key={f.file} entry={f} selected={i === fileIndex} width={filesW - 2} />
-              ))
-          )}
+        <Box width={filesW} borderStyle="round" borderColor={theme.border} flexDirection="column">
+          {tree.length === 0 ? <Text color={theme.hunk}>(no files)</Text> : tree.slice(0, contentH)}
         </Box>
 
         {props.general ? (
           <Box
             width={removedW + addedW}
             borderStyle="round"
-            borderColor={focus === "files" ? theme.border : theme.borderActive}
+            borderColor={theme.borderActive}
             flexDirection="column"
           >
             {visible.map((row, i) => (
@@ -90,7 +107,7 @@ export function Panel(props: Props): React.ReactElement {
                 width={removedW + addedW - 2}
                 side="new"
                 selected={isSelected(row, scrollTop + i)}
-                focused={focus !== "files"}
+                focused
                 lang={null}
               />
             ))}

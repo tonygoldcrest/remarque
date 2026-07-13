@@ -3,12 +3,22 @@ import type { Row } from "../parse";
 
 export interface FileEntry {
   file: string;
+  oldFile: string | null;
   status: DiffFileStatus;
-  general: boolean;
   open: number;
   resolved: number;
   dismissed: number;
   total: number;
+}
+
+export interface StagingGroups {
+  staged: string[];
+  unstaged: string[];
+}
+
+export interface FileSection {
+  title: string | null;
+  files: FileEntry[];
 }
 
 export type DisplayRow =

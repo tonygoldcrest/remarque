@@ -1,48 +1,44 @@
 import React from "react";
 import { Text } from "ink";
 import { FileEntry } from "../../model";
-import { STATUS_MARK } from "./constants";
+import { STATUS_COLOR, STATUS_MARK } from "./constants";
+import { fileLabel } from "./helpers";
 import theme from "../../theme";
 
 export const FileRow = React.memo(function FileRow({
   entry,
   selected,
   width,
+  indent,
 }: {
   entry: FileEntry;
   selected: boolean;
   width: number;
+  indent: number;
 }) {
-  const mark = entry.general ? "◆" : STATUS_MARK[entry.status];
-  const name = entry.general ? "general" : entry.file;
-  const segs: { text: string; color?: string }[] = [{ text: `${mark} ` }];
-
-  if (entry.open > 0) {
-    segs.push({ text: `●${entry.open} `, color: theme.comment });
-  }
-
-  if (entry.resolved > 0) {
-    segs.push({ text: `✓${entry.resolved} `, color: theme.ok });
-  }
-
-  if (entry.dismissed > 0) {
-    segs.push({ text: `✕${entry.dismissed} `, color: theme.hunk });
-  }
-
-  segs.push({ text: name });
-  const used = segs.reduce((n, s) => n + s.text.length, 0);
-
-  if (used < width) {
-    segs.push({ text: " ".repeat(width - used) });
-  }
+  const bg = selected ? theme.fileSelBg : undefined;
+  const threads = entry.total > 0 ? `●${entry.total}` : "";
+  const mark = STATUS_MARK[entry.status] ?? "M";
+  const right = threads ? `${threads} ${mark}` : mark;
+  const room = Math.max(1, width - indent - right.length - 1);
+  const { name, dir, gap } = fileLabel(entry.file, room);
 
   return (
-    <Text backgroundColor={selected ? theme.fileSelBg : undefined} bold={selected} wrap="truncate">
-      {segs.map((s, i) => (
-        <Text key={i} color={s.color}>
-          {s.text}
+    <Text backgroundColor={bg} wrap="truncate">
+      {" ".repeat(indent)}
+      <Text color={theme.comment} bold={selected}>
+        {name}
+      </Text>
+      {dir ? (
+        <Text color={theme.hunk} italic>
+          {` ${dir}`}
         </Text>
-      ))}
+      ) : null}
+      {`${gap} `}
+      {threads ? <Text color={theme.hunk}>{`${threads} `}</Text> : null}
+      <Text color={STATUS_COLOR[entry.status]} bold>
+        {mark}
+      </Text>
     </Text>
   );
 });

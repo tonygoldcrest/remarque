@@ -29,6 +29,7 @@ function mockReview(overrides: Partial<Record<keyof Review, unknown>> = {}): Rev
   return {
     diffFiles: async () => diff,
     state: async () => emptyState,
+    stagingStatus: async () => ({ staged: [], unstaged: ["src/app.ts"] }),
     location: () => path.join(dir, "store", "review.json"),
     addGeneralComment: vi.fn(async () => ({})),
     ...overrides,
@@ -38,11 +39,19 @@ function mockReview(overrides: Partial<Record<keyof Review, unknown>> = {}): Rev
 const tick = () => new Promise((r) => setTimeout(r, 50));
 
 describe("general pane", () => {
-  it("is present even when there are no general comments", async () => {
-    const { lastFrame, unmount } = render(<App review={mockReview()} />);
+  it("is hidden from the file tree and opens with ctrl+g", async () => {
+    const { stdin, lastFrame, unmount } = render(<App review={mockReview()} />);
     await tick();
-    expect(lastFrame()).toContain(" general");
+    expect(lastFrame()).toContain("app.ts");
+    expect(lastFrame()).not.toContain("add a general comment");
+
+    stdin.write("\u0007");
+    await tick();
     expect(lastFrame()).toContain("add a general comment");
+
+    stdin.write("\u0007");
+    await tick();
+    expect(lastFrame()).not.toContain("add a general comment");
     unmount();
   });
 
@@ -61,10 +70,11 @@ describe("general pane", () => {
     });
     const { stdin, lastFrame, unmount } = render(<App review={review} />);
     await tick();
+
+    stdin.write("\u0007");
+    await tick();
     expect(lastFrame()).toContain("add a general comment");
 
-    stdin.write("\t");
-    await tick();
     stdin.write("\u001B[B");
     await tick();
     stdin.write("\u001B[B");
@@ -87,7 +97,7 @@ describe("general pane", () => {
     const { stdin, lastFrame, unmount } = render(<App review={review} />);
     await tick();
 
-    stdin.write("\t"); // focus the general pane
+    stdin.write("\u0007");
     await tick();
     stdin.write("c");
     await tick();

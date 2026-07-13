@@ -1,6 +1,6 @@
 import type { Side } from "../protocol";
 
-export type Focus = "files" | "removed" | "added";
+export type Focus = "removed" | "added";
 
 export interface Composer {
   mode: "new" | "reply" | "general";

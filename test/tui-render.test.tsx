@@ -23,13 +23,26 @@ const thread: ResolvedThread = {
 };
 
 function entry(file: string, status: FileEntry["status"], open: number, total: number): FileEntry {
-  return { file, status, general: false, open, resolved: total - open, dismissed: 0, total };
+  return {
+    file,
+    oldFile: null,
+    status,
+    open,
+    resolved: total - open,
+    dismissed: 0,
+    total,
+  };
 }
 
-const files: FileEntry[] = [
-  entry("src/app.ts", "modified", 2, 2),
-  entry("src/util.ts", "added", 0, 0),
-  entry("README.md", "modified", 0, 1),
+const sections = [
+  {
+    title: "Unstaged (2):",
+    files: [entry("src/app.ts", "modified", 2, 2), entry("README.md", "modified", 0, 1)],
+  },
+  {
+    title: "Staged (1):",
+    files: [entry("src/util.ts", "added", 0, 0)],
+  },
 ];
 
 const rows: DisplayRow[] = [
@@ -79,8 +92,7 @@ describe("Panel render", () => {
     <Panel
       base="HEAD"
       compare="WORKING"
-      files={files}
-      fileIndex={0}
+      sections={sections}
       currentFile="src/app.ts"
       rows={rows}
       rowIndex={2}
@@ -105,7 +117,9 @@ describe("Panel render", () => {
   it("lays out header, file list, diff, and thread", () => {
     const plain = stripAnsi(frame);
     expect(plain).toContain("remarque — HEAD..WORKING");
-    expect(plain).toContain("src/app.ts");
+    expect(plain).toContain("Staged (1):");
+    expect(plain).toContain("Unstaged (2):");
+    expect(plain).toContain("app.ts src");
     expect(plain).toContain("compute(a, b)");
     expect(plain).toContain("human: why +1 here?");
   });

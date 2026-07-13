@@ -75,7 +75,7 @@ function registerDiff(cmd: Command): void {
         const filter: string[] = paths ?? [];
 
         if (!o.json) {
-          console.log(await r.diff(filter));
+          console.log((await r.diff(filter)).trimEnd());
 
           return;
         }

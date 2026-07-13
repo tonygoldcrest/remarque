@@ -163,6 +163,18 @@ export class Review {
     return structuredDiff(this.ctx, opts);
   }
 
+  stagingStatus(): Promise<git.StagingStatus> {
+    return git.stagingStatus(this.ctx.repoRoot);
+  }
+
+  stageFiles(paths: string[]): Promise<void> {
+    return git.stage(this.ctx.repoRoot, paths);
+  }
+
+  unstageFiles(paths: string[]): Promise<void> {
+    return git.unstage(this.ctx.repoRoot, paths);
+  }
+
   state(fileFilter?: string): Promise<ReviewState> {
     return buildState(this.ctx, fileFilter);
   }

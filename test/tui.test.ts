@@ -10,7 +10,8 @@ import {
   seekIndex,
   selectionKey,
   fileList,
-  GENERAL_FILE,
+  fileSections,
+  mergeOrder,
 } from "../src/tui/model";
 import type { DisplayRow } from "../src/tui/model";
 import type {
@@ -335,18 +336,9 @@ describe("fileList", () => {
     };
     expect(fileList(diff, state)).toEqual([
       {
-        file: GENERAL_FILE,
-        status: "modified",
-        general: true,
-        open: 0,
-        resolved: 0,
-        dismissed: 0,
-        total: 0,
-      },
-      {
         file: "f",
+        oldFile: null,
         status: "modified",
-        general: false,
         open: 1,
         resolved: 1,
         dismissed: 0,
@@ -355,28 +347,7 @@ describe("fileList", () => {
     ]);
   });
 
-  it("lifts files with threads above files without, keeping diff order within groups", () => {
-    const file = (name: string): DiffFile => ({
-      file: name,
-      oldFile: null,
-      status: "modified",
-      patch,
-    });
-    const diff: StructuredDiff = {
-      base: "HEAD",
-      compare: "WORKING",
-      files: [file("a"), file("b"), file("c")],
-    };
-    const state: ReviewState = {
-      schemaVersion: 1,
-      session: null,
-      threads: [{ ...thread("t", 2, "resolved"), file: "c" }],
-      generalComments: [],
-    };
-    expect(fileList(diff, state).map((e) => e.file)).toEqual([GENERAL_FILE, "c", "a", "b"]);
-  });
-
-  it("prepends a general pseudo-file with its own status counts", () => {
+  it("builds general rows from general comments only", () => {
     const gc = (id: string, status: GeneralComment["status"]): GeneralComment => ({
       id,
       sessionId: "s",
@@ -386,32 +357,72 @@ describe("fileList", () => {
       createdAt: "t",
       updatedAt: "t",
     });
-    const diff: StructuredDiff = {
-      base: "HEAD",
-      compare: "WORKING",
-      files: [{ file: "f", oldFile: null, status: "modified", patch }],
-    };
     const state: ReviewState = {
       schemaVersion: 1,
       session: null,
       threads: [],
       generalComments: [gc("g1", "open"), gc("g2", "dismissed")],
     };
-    const list = fileList(diff, state);
-    expect(list[0]).toEqual({
-      file: GENERAL_FILE,
-      status: "modified",
-      general: true,
-      open: 1,
-      resolved: 0,
-      dismissed: 1,
-      total: 2,
-    });
     const rows = buildGeneralRows(state, 40);
     const starts = rows.filter((r) => r.kind === "comment" && r.tone === "start");
     expect(starts).toHaveLength(2);
     expect(
       rows.every((r) => r.kind !== "comment" || r.thread.id === "g1" || r.thread.id === "g2"),
     ).toBe(true);
+  });
+});
+
+describe("fileSections", () => {
+  const file = (name: string): DiffFile => ({
+    file: name,
+    oldFile: null,
+    status: "modified",
+    patch,
+  });
+  const diff: StructuredDiff = {
+    base: "HEAD",
+    compare: "WORKING",
+    files: [file("a"), file("b"), file("c")],
+  };
+  const state: ReviewState = {
+    schemaVersion: 1,
+    session: null,
+    threads: [],
+    generalComments: [],
+  };
+  const entries = fileList(diff, state);
+
+  it("keeps everything in one untitled section without staging groups", () => {
+    const sections = fileSections(entries, null);
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0].title).toBeNull();
+    expect(sections[0].files.map((e) => e.file)).toEqual(["a", "b", "c"]);
+  });
+
+  it("splits files into titled unstaged and staged sections", () => {
+    const sections = fileSections(entries, { staged: ["b"], unstaged: ["c", "a"] });
+
+    expect(sections.map((s) => s.title)).toEqual(["Unstaged (2):", "Staged (1):"]);
+    expect(sections[0].files.map((e) => e.file)).toEqual(["c", "a"]);
+    expect(sections[1].files.map((e) => e.file)).toEqual(["b"]);
+  });
+
+  it("counts files with no working changes as staged", () => {
+    const sections = fileSections(entries, { staged: [], unstaged: ["b"] });
+
+    expect(sections[0].files.map((e) => e.file)).toEqual(["b"]);
+    expect(sections[1].title).toBe("Staged (2):");
+    expect(sections[1].files.map((e) => e.file)).toEqual(["a", "c"]);
+  });
+});
+
+describe("mergeOrder", () => {
+  it("keeps previous relative order and appends new arrivals", () => {
+    expect(mergeOrder(["b", "a"], ["a", "b", "c"])).toEqual(["b", "a", "c"]);
+  });
+
+  it("drops files that left the group", () => {
+    expect(mergeOrder(["a", "b"], ["b"])).toEqual(["b"]);
   });
 });

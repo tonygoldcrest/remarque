@@ -1,26 +1,47 @@
+import type { Key } from "ink";
+
 import type { Review, ReviewItem } from "../../review";
 import type { DisplayRow, FileEntry } from "../model";
 import type { Focus } from "../types";
 import type { ComposerIntent, StatusKey } from "./types";
 
+function isDeleteChunk(ch: string): boolean {
+  return ch.length > 0 && [...ch].every((c) => c === "\u007F" || c === "\u0008");
+}
+
+export function editValue(value: string, ch: string, key: Key): string {
+  if (key.backspace || key.delete) {
+    return value.slice(0, -1);
+  }
+
+  if (!ch || key.ctrl || key.meta) {
+    return value;
+  }
+
+  if (isDeleteChunk(ch)) {
+    return value.slice(0, -ch.length);
+  }
+
+  const clean = ch.replace(/[\r\n\t]+/g, " ").replace(/\p{C}/gu, "");
+
+  return value + clean;
+}
+
 export function composerIntent(
   row: DisplayRow | undefined,
   focus: Focus,
+  general: boolean,
   entry: FileEntry | null,
 ): ComposerIntent {
-  if (!entry) {
-    return null;
-  }
-
   if (row && row.kind === "comment" && row.tone !== "rule") {
     return { open: { mode: "reply", threadId: row.thread.id } };
   }
 
-  if (row?.kind === "compose" || entry.general) {
+  if (general) {
     return { open: { mode: "general" } };
   }
 
-  if (!row) {
+  if (!entry || !row) {
     return null;
   }
 

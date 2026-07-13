@@ -303,4 +303,30 @@ describe("review loop", () => {
     const item = await review.getItem(thread.id.slice(0, 8));
     expect(item?.id).toBe(thread.id);
   });
+
+  it("reports staging status and stages/unstages files, keeping the first entry intact", async () => {
+    const { dir, run } = tmpRepo();
+    writeFileSync(path.join(dir, "a.txt"), "a\n");
+    writeFileSync(path.join(dir, "b.txt"), "b\n");
+    run(["add", "-A"]);
+    run(["commit", "-qm", "init"]);
+    writeFileSync(path.join(dir, "a.txt"), "a changed\n");
+    writeFileSync(path.join(dir, "b.txt"), "b changed\n");
+    writeFileSync(path.join(dir, "c.txt"), "untracked\n");
+
+    const review = await openReview(dir);
+    expect(await review.stagingStatus()).toEqual({
+      staged: [],
+      unstaged: ["a.txt", "b.txt", "c.txt"],
+    });
+
+    await review.stageFiles(["a.txt"]);
+    expect(await review.stagingStatus()).toEqual({
+      staged: ["a.txt"],
+      unstaged: ["b.txt", "c.txt"],
+    });
+
+    await review.unstageFiles(["a.txt"]);
+    expect((await review.stagingStatus()).staged).toEqual([]);
+  });
 });

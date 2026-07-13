@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Review } from "../../review";
 import type { ReviewState, StructuredDiff } from "../../protocol";
@@ -7,14 +7,31 @@ import { watchStore } from "../../store/watch";
 export function useReviewData(review: Review, onError: (e: Error) => void) {
   const [structured, setStructured] = useState<StructuredDiff | null>(null);
   const [state, setState] = useState<ReviewState | null>(null);
+  const alive = useRef(true);
+
+  useEffect(
+    () => () => {
+      alive.current = false;
+    },
+    [],
+  );
 
   const reloadAll = useCallback(async () => {
-    setStructured(await review.diffFiles({ whole: true }));
-    setState(await review.state());
+    const diff = await review.diffFiles({ whole: true });
+    const nextState = await review.state();
+
+    if (alive.current) {
+      setStructured(diff);
+      setState(nextState);
+    }
   }, [review]);
 
   const reloadThreads = useCallback(async () => {
-    setState(await review.state());
+    const nextState = await review.state();
+
+    if (alive.current) {
+      setState(nextState);
+    }
   }, [review]);
 
   useEffect(() => {

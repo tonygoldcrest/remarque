@@ -13,3 +13,8 @@ export interface RepoInfo {
   branch: string;
   hasHead: boolean;
 }
+
+export interface StagingStatus {
+  staged: string[];
+  unstaged: string[];
+}

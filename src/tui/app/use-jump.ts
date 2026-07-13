@@ -6,10 +6,11 @@ import type { DisplayRow } from "../model";
 interface JumpArgs {
   rows: DisplayRow[];
   onJump: (target: number) => void;
+  onFile: (dir: number) => void;
   onMiss: (notice: string) => void;
 }
 
-export function useJump({ rows, onJump, onMiss }: JumpArgs) {
+export function useJump({ rows, onJump, onFile, onMiss }: JumpArgs) {
   const [pending, setPending] = useState<"]" | "[" | null>(null);
 
   const handleKey = (ch: string, from: number): boolean => {
@@ -27,6 +28,12 @@ export function useJump({ rows, onJump, onMiss }: JumpArgs) {
         } else {
           onJump(target);
         }
+
+        return true;
+      }
+
+      if (ch === "f") {
+        onFile(dir);
 
         return true;
       }

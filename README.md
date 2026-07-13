@@ -82,8 +82,11 @@ that's still broken. Push when you're happy with the result.
 
 ```
 ↑ ↓      move between comments and lines
-Tab      switch pane (files · removed · added)
+Tab      switch side (removed · added)
+]f  [f   next / previous file
 c        comment on a line, or reply to the selected comment
+-        stage / unstage the current file
+^G       open / close the review-wide general comments
 r  x     resolve / dismiss the selected comment
 o        reopen a resolved or dismissed comment
 d        delete a comment (asks y/N)
@@ -91,6 +94,10 @@ d        delete a comment (asks y/N)
 ]t  [t   jump to next / previous comment thread
 ^R       reload      q  quit
 ```
+
+When you review the working tree, the file tree groups files under Unstaged and
+Staged headings, and `-` moves the current file between them. Each file shows
+its comment count and change status on the right.
 
 The panel live-updates, so your agent's replies and resolves appear while you
 watch. A comment taller than the screen scrolls into view as you move onto it.

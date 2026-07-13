@@ -2,7 +2,8 @@ import React, { useCallback, useMemo, useState } from "react";
 import { render, Text, useApp, useInput } from "ink";
 
 import type { Review } from "../../review";
-import { buildDisplayRows, buildGeneralRows, computeUnits, fileList } from "../model";
+import { WORKING_TREE } from "../../protocol";
+import { buildDisplayRows, buildGeneralRows, computeUnits, fileList, fileSections } from "../model";
 import { enterFullscreen } from "../screen";
 import type { Focus } from "../types";
 import { contentHeight, paneWidths } from "../helpers";
@@ -13,6 +14,7 @@ import { useComposer } from "./use-composer";
 import { useConfirmDelete } from "./use-confirm-delete";
 import { useJump } from "./use-jump";
 import { useReviewData } from "./use-review-data";
+import { useStaging } from "./use-staging";
 import { useTerminalSize } from "./use-terminal-size";
 import { useViewport } from "./use-viewport";
 
@@ -20,34 +22,44 @@ export function App({ review }: { review: Review }): React.ReactElement {
   const { exit } = useApp();
   const { columns, rows: termRows } = useTerminalSize();
   const [message, setMessage] = useState<string | null>(null);
-  const [fileIndex, setFileIndex] = useState(0);
-  const [focus, setFocus] = useState<Focus>("files");
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [generalOpen, setGeneralOpen] = useState(false);
+  const [focus, setFocus] = useState<Focus>("added");
 
   const onError = useCallback((e: Error) => setMessage(`error: ${e.message}`), []);
   const { structured, state, reloadAll, reloadThreads } = useReviewData(review, onError);
+  const staging = useStaging({
+    review,
+    available: structured?.compare === WORKING_TREE,
+    onError,
+  });
 
-  const files = useMemo(
-    () => (structured && state ? fileList(structured, state) : []),
-    [structured, state],
+  const sections = useMemo(
+    () => (structured && state ? fileSections(fileList(structured, state), staging.groups) : []),
+    [structured, state, staging.groups],
+  );
+  const files = useMemo(() => sections.flatMap((s) => s.files), [sections]);
+  const fileIndex = Math.max(
+    0,
+    files.findIndex((f) => f.file === selectedFile),
   );
   const currentEntry = files[fileIndex] ?? null;
-  const isGeneral = currentEntry?.general ?? false;
 
   const rows = useMemo(() => {
-    if (!structured || !state || !currentEntry) {
+    if (!structured || !state) {
       return [];
     }
 
     const { removedW, addedW } = paneWidths(columns);
 
-    if (currentEntry.general) {
+    if (generalOpen) {
       return buildGeneralRows(state, removedW + addedW - 2);
     }
 
-    const file = structured.files.find((f) => f.file === currentEntry.file);
+    const file = currentEntry && structured.files.find((f) => f.file === currentEntry.file);
 
     return file ? buildDisplayRows(file, state, { old: removedW - 2, new: addedW - 2 }) : [];
-  }, [structured, state, currentEntry, columns]);
+  }, [structured, state, currentEntry, generalOpen, columns]);
 
   const height = Math.max(6, termRows - 1);
   const contentH = contentHeight(height);
@@ -69,56 +81,48 @@ export function App({ review }: { review: Review }): React.ReactElement {
     onDeleted: () => refreshThreads("comment deleted"),
     onError,
   });
+
+  const selectFile = (dir: number) => {
+    if (files.length > 0) {
+      setSelectedFile(files[(fileIndex + dir + files.length) % files.length].file);
+      setGeneralOpen(false);
+      viewport.reset();
+    }
+  };
+
+  const toggleGeneral = () => {
+    setGeneralOpen(!generalOpen);
+    viewport.reset();
+  };
+
   const jump = useJump({
     rows,
-    onJump: (target) => {
-      if (focus === "files") {
-        setFocus("added");
-      }
-
-      viewport.jumpTo(target);
-    },
+    onJump: viewport.jumpTo,
+    onFile: selectFile,
     onMiss: setMessage,
   });
 
   const selectedThread = () => {
     const row = rows[viewport.boundedRow];
 
-    return focus !== "files" && row && row.kind === "comment" ? row.thread : null;
+    return row && row.kind === "comment" ? row.thread : null;
   };
 
   const reload = () => {
     setMessage("reloading…");
-    reloadAll()
+    Promise.all([reloadAll(), staging.refresh()])
       .then(() => setMessage("reloaded"))
       .catch(onError);
   };
 
-  const cycleFocus = (backwards: boolean) => {
-    const order: Focus[] = isGeneral ? ["files", "added"] : ["files", "removed", "added"];
-    const current = isGeneral && focus === "removed" ? "added" : focus;
-    const next = order.indexOf(current) + (backwards ? -1 : 1);
-
-    setFocus(order[(next + order.length) % order.length]);
-  };
-
-  const moveSelection = (dir: number) => {
-    if (focus !== "files") {
-      return viewport.move(dir);
-    }
-
-    if (files.length > 0) {
-      setFileIndex((i) => (i + dir + files.length) % files.length);
-      viewport.reset();
+  const cycleFocus = () => {
+    if (!generalOpen) {
+      setFocus(focus === "added" ? "removed" : "added");
     }
   };
 
   const commentAtCursor = () => {
-    if (focus === "files") {
-      return;
-    }
-
-    const intent = composerIntent(rows[viewport.boundedRow], focus, currentEntry);
+    const intent = composerIntent(rows[viewport.boundedRow], focus, generalOpen, currentEntry);
 
     if (!intent) {
       return;
@@ -132,10 +136,6 @@ export function App({ review }: { review: Review }): React.ReactElement {
   };
 
   const deleteAtCursor = () => {
-    if (focus === "files") {
-      return;
-    }
-
     const thread = selectedThread();
 
     if (!thread) {
@@ -159,6 +159,14 @@ export function App({ review }: { review: Review }): React.ReactElement {
       .catch(onError);
   };
 
+  const toggleStaging = () => {
+    if (!currentEntry || generalOpen) {
+      return setMessage("select a file to stage");
+    }
+
+    staging.toggle(currentEntry).then(setMessage).catch(onError);
+  };
+
   useInput((ch, key) => {
     if (confirmDelete.handleKey(ch)) {
       return;
@@ -180,12 +188,20 @@ export function App({ review }: { review: Review }): React.ReactElement {
       return reload();
     }
 
+    if (key.ctrl && ch === "g") {
+      return toggleGeneral();
+    }
+
     if (key.tab) {
-      return cycleFocus(!!key.shift);
+      return cycleFocus();
     }
 
     if (key.upArrow || key.downArrow) {
-      return moveSelection(key.upArrow ? -1 : 1);
+      return viewport.move(key.upArrow ? -1 : 1);
+    }
+
+    if (ch === "-") {
+      return toggleStaging();
     }
 
     if (ch === "c") {
@@ -209,14 +225,13 @@ export function App({ review }: { review: Review }): React.ReactElement {
     <Panel
       base={structured.base}
       compare={structured.compare}
-      files={files}
-      fileIndex={fileIndex}
+      sections={sections}
       currentFile={currentEntry?.file ?? null}
       rows={rows}
       rowIndex={viewport.boundedRow}
       scrollTop={viewport.pos.top}
       focus={focus}
-      general={isGeneral}
+      general={generalOpen}
       width={columns}
       height={height}
       input={composer.composer}

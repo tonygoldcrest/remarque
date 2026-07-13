@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
+import type { Key } from "ink";
 
-import { composerIntent } from "../src/tui/app/helpers";
+import { composerIntent, editValue } from "../src/tui/app/helpers";
 import { wrapWords } from "../src/tui/model/wrap";
 import type { DisplayRow, FileEntry } from "../src/tui/model";
 import type { ResolvedThread } from "../src/protocol";
@@ -20,11 +21,11 @@ const thread: ResolvedThread = {
   currentEndLine: 1,
 };
 
-function entry(general: boolean): FileEntry {
+function entry(): FileEntry {
   return {
-    file: general ? " general" : "f",
+    file: "f",
+    oldFile: null,
     status: "modified",
-    general,
     open: 0,
     resolved: 0,
     dismissed: 0,
@@ -51,33 +52,33 @@ const lineRow: DisplayRow = {
 
 describe("composerIntent", () => {
   it("replies when the cursor is on a comment row", () => {
-    expect(composerIntent(commentRow, "added", entry(false))).toEqual({
+    expect(composerIntent(commentRow, "added", false, entry())).toEqual({
       open: { mode: "reply", threadId: "t1" },
     });
-    expect(composerIntent(commentRow, "added", entry(true))).toEqual({
+    expect(composerIntent(commentRow, "added", true, entry())).toEqual({
       open: { mode: "reply", threadId: "t1" },
     });
   });
 
-  it("opens a general composer on the compose row and anywhere else in the general pane", () => {
+  it("opens a general composer anywhere in the general pane", () => {
     const compose: DisplayRow = { kind: "compose", text: "+ add a general comment" };
 
-    expect(composerIntent(compose, "added", entry(true))).toEqual({
+    expect(composerIntent(compose, "added", true, entry())).toEqual({
       open: { mode: "general" },
     });
-    expect(composerIntent(undefined, "added", entry(true))).toEqual({
+    expect(composerIntent(undefined, "added", true, null)).toEqual({
       open: { mode: "general" },
     });
   });
 
   it("opens a new thread composer on a numbered diff line", () => {
-    expect(composerIntent(lineRow, "added", entry(false))).toEqual({
+    expect(composerIntent(lineRow, "added", false, entry())).toEqual({
       open: { mode: "new", file: "f", side: "new", line: 3 },
     });
   });
 
   it("notices when the focused side has no line", () => {
-    expect(composerIntent(lineRow, "removed", entry(false))).toEqual({
+    expect(composerIntent(lineRow, "removed", false, entry())).toEqual({
       notice: "no removed line here",
     });
   });
@@ -85,10 +86,58 @@ describe("composerIntent", () => {
   it("notices on non-line rows and bails without a file entry", () => {
     const hunk: DisplayRow = { kind: "hunk", header: "@@" };
 
-    expect(composerIntent(hunk, "added", entry(false))).toEqual({
+    expect(composerIntent(hunk, "added", false, entry())).toEqual({
       notice: "select a diff line to comment",
     });
-    expect(composerIntent(lineRow, "added", null)).toBeNull();
+    expect(composerIntent(lineRow, "added", false, null)).toBeNull();
+  });
+});
+
+function key(overrides: Partial<Key> = {}): Key {
+  return {
+    upArrow: false,
+    downArrow: false,
+    leftArrow: false,
+    rightArrow: false,
+    pageDown: false,
+    pageUp: false,
+    return: false,
+    escape: false,
+    ctrl: false,
+    shift: false,
+    tab: false,
+    backspace: false,
+    delete: false,
+    meta: false,
+    ...overrides,
+  };
+}
+
+describe("editValue", () => {
+  it("appends typed characters", () => {
+    expect(editValue("a", "b", key())).toBe("ab");
+  });
+
+  it("removes one character on backspace or delete", () => {
+    expect(editValue("abc", "", key({ delete: true }))).toBe("ab");
+    expect(editValue("abc", "", key({ backspace: true }))).toBe("ab");
+  });
+
+  it("treats a coalesced chunk of DEL bytes as that many deletions", () => {
+    expect(editValue("abcd", "\u007F\u007F\u007F", key())).toBe("a");
+  });
+
+  it("never lets control characters into the value", () => {
+    expect(editValue("a", "x\u0007y\u001B", key())).toBe("axy");
+  });
+
+  it("flattens pasted newlines and tabs to spaces", () => {
+    expect(editValue("", "line1\nline2\tend", key())).toBe("line1 line2 end");
+  });
+
+  it("ignores ctrl and meta chords", () => {
+    expect(editValue("abc", "r", key({ ctrl: true }))).toBe("abc");
+    expect(editValue("abc", "r", key({ meta: true }))).toBe("abc");
   });
 });
 

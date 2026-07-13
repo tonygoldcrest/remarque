@@ -31,7 +31,7 @@ export function runGit(args: string[], opts: RunOptions): Promise<string> {
         return;
       }
 
-      resolve(Buffer.concat(out).toString("utf8").trim());
+      resolve(Buffer.concat(out).toString("utf8"));
     });
 
     if (opts.stdin !== undefined) {
