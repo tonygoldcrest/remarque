@@ -103,6 +103,51 @@ describe("review loop", () => {
     expect(byFile.get("new.txt")!.status).toBe("added");
   });
 
+  it("includes untracked files as added, alongside modified and deleted", async () => {
+    const { dir, run } = tmpRepo();
+    writeFileSync(path.join(dir, "keep.txt"), "a\nb\nc\n");
+    writeFileSync(path.join(dir, "gone.txt"), "x\ny\n");
+    run(["add", "."]);
+    run(["commit", "-qm", "init"]);
+    writeFileSync(path.join(dir, "keep.txt"), "a\nB\nc\n");
+    run(["rm", "-q", "gone.txt"]);
+    writeFileSync(path.join(dir, "fresh.txt"), "new1\nnew2\n");
+
+    const review = await openReview(dir);
+    const structured = await review.diffFiles();
+    const byFile = new Map(structured.files.map((f) => [f.file, f]));
+
+    expect([...byFile.keys()].sort()).toEqual(["fresh.txt", "gone.txt", "keep.txt"]);
+    expect(byFile.get("gone.txt")!.status).toBe("deleted");
+    expect(byFile.get("fresh.txt")!.status).toBe("added");
+    expect(byFile.get("fresh.txt")!.patch).toContain("+new1");
+    expect(byFile.get("fresh.txt")!.patch).toContain("+new2");
+
+    const raw = await review.diff();
+    expect(raw).toContain("fresh.txt");
+    expect(raw).toContain("+new1");
+  });
+
+  it("diff --json is hunk-based by default and full-file with whole:true", async () => {
+    const { dir, run } = tmpRepo();
+    writeFileSync(
+      path.join(dir, "big.txt"),
+      Array.from({ length: 60 }, (_, i) => i + 1).join("\n") + "\n",
+    );
+    run(["add", "."]);
+    run(["commit", "-qm", "init"]);
+    writeFileSync(
+      path.join(dir, "big.txt"),
+      Array.from({ length: 60 }, (_, i) => (i === 29 ? "THIRTY" : String(i + 1))).join("\n") + "\n",
+    );
+
+    const review = await openReview(dir);
+    const hunk = (await review.diffFiles()).files[0].patch.split("\n").length;
+    const whole = (await review.diffFiles({ whole: true })).files[0].patch.split("\n").length;
+    expect(hunk).toBeLessThan(whole);
+    expect(whole).toBeGreaterThan(60);
+  });
+
   it("works before the first commit (diffs against the empty tree)", async () => {
     const { dir, run } = tmpRepo();
     writeFileSync(path.join(dir, "first.txt"), "hello\n");

@@ -18,19 +18,29 @@ commenting — this keeps this review's comments separate from any earlier round
 remarque session start --base HEAD
 ```
 
-The default range is `HEAD..WORKING` (the current uncommitted changes). To review
-an entire feature branch instead, base it on your trunk: `--base main` (or
-`--base origin/main`).
+The default range is `HEAD..WORKING` (the current uncommitted changes). `--base`
+takes any ref, so you can review:
 
-## 2. Read the whole diff first
+- an entire feature branch — `--base main` (or `--base origin/main`)
+- everything since a specific commit — `--base <commit-sha>` reviews the changes
+  made _after_ that commit; use `--base <commit-sha>~1` to include the commit
+  itself. This is what "review changes from this commit onwards" means.
+
+## 2. Read the diff
 
 ```sh
 remarque diff --json
 ```
 
 Each file entry gives the changed hunks with line numbers on each side (`old` =
-base, `new` = working tree). Read the entire diff before commenting so your
-comments account for context and you don't repeat yourself across files.
+base, `new` = working tree), plus any brand-new untracked files. Read the whole
+diff before commenting so your comments account for context and you don't repeat
+yourself across files.
+
+`diff --json` returns just the changed hunks, which is compact. If the diff is
+still large, read it a file at a time instead of loading everything at once —
+`remarque diff --json <path>` restricts output to one file. Do **not** shell out
+to another language to slice the JSON; fetch per file.
 
 ## 3. Review for real
 

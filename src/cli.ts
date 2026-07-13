@@ -223,12 +223,13 @@ function addReadVerbs(cmd: Command): void {
     .command("diff")
     .description("print the diff the review is over (plain text, or --json per file)")
     .option("--json", "output structured JSON ({ base, compare, files })")
+    .option("--whole", "include full-file context instead of just the changed hunks")
     .argument("[paths...]", "restrict to paths")
     .action((paths, o) =>
       withReview(async (r) => {
         const filter: string[] = paths ?? [];
         if (o.json) {
-          const structured = await r.diffFiles();
+          const structured = await r.diffFiles({ whole: !!o.whole });
           const files = filter.length
             ? structured.files.filter((f) => filter.includes(f.file))
             : structured.files;
@@ -371,7 +372,11 @@ function buildProgram(): Command {
   session
     .command("start")
     .description("start a new review session and make it current")
-    .option("--base <ref>", "base ref to diff from", "HEAD")
+    .option(
+      "--base <ref>",
+      "base to diff from — a commit SHA, tag, or branch (changes after it)",
+      "HEAD",
+    )
     .option("--compare <ref>", 'ref to compare, or "WORKING"', "WORKING")
     .option("--json", "output JSON")
     .action((o) =>
@@ -414,7 +419,11 @@ function buildProgram(): Command {
     .command("start")
     .alias("s")
     .description("start a NEW review session and open the interactive panel")
-    .option("--base <ref>", "base ref to diff from", "HEAD")
+    .option(
+      "--base <ref>",
+      "base to diff from — a commit SHA, tag, or branch (changes after it)",
+      "HEAD",
+    )
     .option("--compare <ref>", 'ref to compare, or "WORKING"', "WORKING")
     .action(async (o) => {
       try {

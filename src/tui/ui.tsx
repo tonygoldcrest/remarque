@@ -20,8 +20,8 @@ export function paneWidths(width: number): { filesW: number; removedW: number; a
 }
 
 export const COLORS = {
-  addBg: "#10261a",
-  delBg: "#2c181d",
+  addBg: "#16402a",
+  delBg: "#48232b",
   addFg: "#3fb950",
   delFg: "#f85149",
   cursorBg: "#26364f",
@@ -92,10 +92,10 @@ const FileRow = React.memo(function FileRow({
   selected: boolean;
   width: number;
 }) {
-  const badge = entry.open > 0 ? ` ●${entry.open}` : "";
+  const badge = entry.open > 0 ? `●${entry.open} ` : "";
   return (
     <Text backgroundColor={selected ? COLORS.fileSelBg : undefined} bold={selected} wrap="truncate">
-      {fit(`${STATUS_MARK[entry.status]} ${entry.file}${badge}`, width)}
+      {fit(`${STATUS_MARK[entry.status]} ${badge}${entry.file}`, width)}
     </Text>
   );
 });

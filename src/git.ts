@@ -84,6 +84,11 @@ export async function showFile(cwd: string, ref: string, path: string): Promise<
   return runGit(["show", `${ref}:${path}`], { cwd });
 }
 
+export async function untrackedFiles(cwd: string): Promise<string[]> {
+  const out = await runGit(["ls-files", "--others", "--exclude-standard", "-z"], { cwd });
+  return out.split("\0").filter(Boolean);
+}
+
 export async function isRepo(cwd: string): Promise<boolean> {
   try {
     await runGit(["rev-parse", "--is-inside-work-tree"], { cwd });

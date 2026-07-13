@@ -51,6 +51,25 @@ function now(): string {
   return new Date().toISOString();
 }
 
+function addedFilePatch(file: string, content: string): string {
+  const header = [`diff --git a/${file} b/${file}`, "new file mode 100644"];
+  if (content.includes("\u0000")) {
+    return [...header, `Binary files /dev/null and b/${file} differ`, ""].join("\n");
+  }
+  const hadTrailingNewline = content.endsWith("\n");
+  const body = hadTrailingNewline ? content.slice(0, -1) : content;
+  const lines = body.length === 0 ? [] : body.split("\n");
+  const patch = [
+    ...header,
+    "--- /dev/null",
+    `+++ b/${file}`,
+    `@@ -0,0 +1,${lines.length} @@`,
+    ...lines.map((l) => `+${l}`),
+  ];
+  if (!hadTrailingNewline && lines.length > 0) patch.push("\\ No newline at end of file");
+  return patch.join("\n") + "\n";
+}
+
 function newMessage(author: Author, body: string): Message {
   return { id: randomUUID(), author, body, at: now() };
 }
@@ -318,13 +337,21 @@ export class Review {
     const store = await this.backend.read();
     const session = await this.sessionForRead(store);
     const base = await this.effectiveBase(session.base);
-    return git.diff(this.repoRoot, base, session.compare, paths);
+    let out = await git.diff(this.repoRoot, base, session.compare, paths);
+    if (session.compare === "WORKING") {
+      for (const file of await this.untrackedInScope(paths)) {
+        const { content } = await this.sideContent(file, "new", base);
+        out += (out && !out.endsWith("\n") ? "\n" : "") + addedFilePatch(file, content ?? "");
+      }
+    }
+    return out;
   }
 
-  async diffFiles(): Promise<StructuredDiff> {
+  async diffFiles(opts: { whole?: boolean } = {}): Promise<StructuredDiff> {
     const store = await this.backend.read();
     const session = await this.sessionForRead(store);
     const base = await this.effectiveBase(session.base);
+    const context = opts.whole ? FULL_FILE_CONTEXT : undefined;
     const raw = await git.nameStatus(this.repoRoot, base, session.compare);
 
     const files: DiffFile[] = [];
@@ -340,11 +367,28 @@ export class Review {
         file,
         oldFile,
         status: statusFromCode(code[0]),
-        patch: await git.diff(this.repoRoot, base, session.compare, paths, FULL_FILE_CONTEXT),
+        patch: await git.diff(this.repoRoot, base, session.compare, paths, context),
       });
     }
 
+    if (session.compare === "WORKING") {
+      for (const file of await this.untrackedInScope()) {
+        const { content } = await this.sideContent(file, "new", base);
+        files.push({
+          file,
+          oldFile: null,
+          status: "added",
+          patch: addedFilePatch(file, content ?? ""),
+        });
+      }
+    }
+
     return { base: session.base, compare: session.compare, files };
+  }
+
+  private async untrackedInScope(paths: string[] = []): Promise<string[]> {
+    const untracked = await git.untrackedFiles(this.repoRoot);
+    return paths.length ? untracked.filter((f) => paths.includes(f)) : untracked;
   }
 
   async state(fileFilter?: string): Promise<ReviewState> {

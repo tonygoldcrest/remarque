@@ -56,7 +56,7 @@ function App({ review }: { review: Review }): React.ReactElement {
 
   const reloadAll = useMemo(
     () => async () => {
-      setStructured(await review.diffFiles());
+      setStructured(await review.diffFiles({ whole: true }));
       setState(await review.state());
     },
     [review],
