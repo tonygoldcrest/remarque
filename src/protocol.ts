@@ -1,4 +1,6 @@
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
+
+export const WORKING_TREE = "WORKING";
 
 export type Side = "new" | "old";
 

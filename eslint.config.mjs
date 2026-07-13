@@ -6,6 +6,7 @@ export default tseslint.config(
   { ignores: ["dist/", "node_modules/", "coverage/"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  eslintPluginPrettierRecommended,
   {
     languageOptions: {
       ecmaVersion: 2022,
@@ -13,7 +14,7 @@ export default tseslint.config(
     },
     rules: {
       "no-empty": ["error", { allowEmptyCatch: true }],
+      curly: ["error", "all"],
     },
   },
-  eslintPluginPrettierRecommended,
 );

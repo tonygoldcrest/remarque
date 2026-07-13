@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -17,7 +17,7 @@ function tmpRepo() {
 }
 
 function openReview(dir: string) {
-  return Review.open({ cwd: dir, backend: new JsonBackend(path.join(dir, ".review.json")) });
+  return Review.open({ cwd: dir, backend: new JsonBackend(path.join(dir, ".review")) });
 }
 
 describe("review loop", () => {
@@ -160,6 +160,136 @@ describe("review loop", () => {
     const t = await review.addComment({ file: "first.txt", line: 1, body: "hi" });
     const state = await review.state();
     expect(state.threads.find((x) => x.id === t.id)!.currentLine).toBe(1);
+  });
+
+  it("submits a whole review in one batch, anchored and attributed", async () => {
+    const { dir, run } = tmpRepo();
+    writeFileSync(path.join(dir, "a.txt"), "1\n2\n3\n4\n5\n");
+    writeFileSync(path.join(dir, "b.txt"), "x\ny\n");
+    run(["add", "."]);
+    run(["commit", "-qm", "init"]);
+    writeFileSync(path.join(dir, "a.txt"), "1\n2 CHANGED\n3\n4\n5\n");
+
+    const review = await openReview(dir);
+    await review.startSession({ base: "HEAD" });
+    const res = await review.addBatch({
+      author: "agent",
+      comments: [
+        { file: "a.txt", line: 2, body: "one" },
+        { file: "a.txt", line: 4, body: "two" },
+        { file: "b.txt", line: 1, body: "three" },
+      ],
+      general: [{ body: "overall" }],
+    });
+
+    expect(res.threads).toHaveLength(3);
+    expect(res.generalComments).toHaveLength(1);
+
+    const store = await review.read();
+    expect(store.threads).toHaveLength(3);
+    expect(store.generalComments).toHaveLength(1);
+    expect(store.threads.every((t) => t.messages[0].author === "agent")).toBe(true);
+    expect(store.generalComments[0].messages[0].author).toBe("agent");
+
+    const state = await review.state();
+    const byBody = new Map(state.threads.map((t) => [t.messages[0].body, t]));
+    expect(byBody.get("one")!.currentLine).toBe(2);
+    expect(byBody.get("two")!.currentLine).toBe(4);
+  });
+
+  it("applies replies and resolutions to many threads in one batch", async () => {
+    const { dir, run } = tmpRepo();
+    writeFileSync(path.join(dir, "a.txt"), "1\n2\n3\n");
+    run(["add", "."]);
+    run(["commit", "-qm", "init"]);
+
+    const review = await openReview(dir);
+    const t1 = await review.addComment({ file: "a.txt", line: 1, body: "one", author: "human" });
+    const t2 = await review.addComment({ file: "a.txt", line: 2, body: "two", author: "human" });
+    const g = await review.addGeneralComment({ body: "overall", author: "human" });
+
+    const res = await review.applyBatch({
+      author: "agent",
+      actions: [
+        { id: t1.id.slice(0, 8), reply: "fixed", status: "resolved" },
+        { id: t2.id, status: "dismissed", note: "wontfix" },
+        { id: g.id, reply: "added tests" },
+        { id: "deadbeef", reply: "nope" },
+      ],
+    });
+
+    expect(res.applied.sort()).toEqual([t1.id, t2.id, g.id].sort());
+    expect(res.notFound).toEqual(["deadbeef"]);
+
+    const store = await review.read();
+    const a = store.threads.find((t) => t.id === t1.id)!;
+    expect(a.status).toBe("resolved");
+    expect(a.messages.map((m) => m.body)).toEqual(["one", "fixed"]);
+    expect(a.messages[1].author).toBe("agent");
+    const b = store.threads.find((t) => t.id === t2.id)!;
+    expect(b.status).toBe("dismissed");
+    expect(b.resolution?.note).toBe("wontfix");
+    expect(store.generalComments[0].messages.map((m) => m.body)).toEqual([
+      "overall",
+      "added tests",
+    ]);
+  });
+
+  it("stores each session in its own file behind a sessions manifest", async () => {
+    const { dir, run } = tmpRepo();
+    writeFileSync(path.join(dir, "a.txt"), "1\n2\n");
+    run(["add", "."]);
+    run(["commit", "-qm", "init"]);
+
+    const review = await openReview(dir);
+    const s1 = await review.startSession({ base: "HEAD" });
+    await review.addComment({ file: "a.txt", line: 1, body: "one" });
+    const s2 = await review.startSession({ base: "HEAD" });
+    await review.addGeneralComment({ body: "overall" });
+
+    const storeDir = path.join(dir, ".review");
+    const readJson = (name: string) => JSON.parse(readFileSync(path.join(storeDir, name), "utf8"));
+
+    const manifest = readJson("sessions.json");
+    expect(manifest.sessions.map((s: { id: string }) => s.id)).toEqual([s1.id, s2.id]);
+    expect(manifest.currentSessionId).toBe(s2.id);
+    expect(manifest.sessions.every((s: { createdAt?: string }) => s.createdAt)).toBe(true);
+
+    const first = readJson(`${s1.id}.json`);
+    const second = readJson(`${s2.id}.json`);
+    expect(first.threads).toHaveLength(1);
+    expect(first.generalComments).toHaveLength(0);
+    expect(second.threads).toHaveLength(0);
+    expect(second.generalComments).toHaveLength(1);
+
+    const resumed = await review.resumeLast();
+    expect(resumed.id).toBe(s2.id);
+  });
+
+  it("anchors new-side comments against the compare ref, not the working tree", async () => {
+    const { dir, run } = tmpRepo();
+    const sha = () => execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir }).toString().trim();
+
+    writeFileSync(path.join(dir, "f.txt"), "one\ntwo\nthree\n");
+    run(["add", "."]);
+    run(["commit", "-qm", "base"]);
+    const base = sha();
+
+    writeFileSync(path.join(dir, "f.txt"), "one\nTWO CHANGED\nthree\n");
+    run(["add", "."]);
+    run(["commit", "-qm", "compare"]);
+    const compare = sha();
+
+    writeFileSync(path.join(dir, "f.txt"), "totally\ndifferent\nworking tree\n");
+
+    const review = await openReview(dir);
+    await review.startSession({ base, compare });
+    const t = await review.addComment({ file: "f.txt", line: 2, body: "?" });
+
+    const found = (await review.state()).threads.find((x) => x.id === t.id)!;
+    expect(found.anchor.lineText).toBe("TWO CHANGED");
+    expect(found.currentLine).toBe(2);
+    expect(found.status).toBe("open");
   });
 
   it("looks up threads by short id prefix", async () => {

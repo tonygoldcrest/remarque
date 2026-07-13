@@ -47,14 +47,19 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && chmod +x dist/cli.js",
-    "prepare": "tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "build": "rm -rf dist && tsc -p tsconfig.json && chmod +x dist/cli.js",
+    "prepare": "rm -rf dist && tsc -p tsconfig.json && chmod +x dist/cli.js",
     "dev": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "format": "prettier --write .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc -p tsconfig.test.json",
     "prepublishOnly": "yarn build"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "trailingComma": "all"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.5.2",

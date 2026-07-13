@@ -111,7 +111,9 @@ on one branch.
 ## Where reviews are stored
 
 Reviews are saved as JSON outside your repo by default, so nothing touches your
-working tree. `remarque config` prints the exact path. To change it, run
+working tree. Each branch gets its own folder holding a `sessions.json` manifest
+and one file per review session. `remarque config` prints the exact path. To
+change it, run
 `remarque init` (choose a repo folder or the global store) or set
 `REMARQUE_STORE_DIR`.
 

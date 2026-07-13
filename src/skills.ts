@@ -18,12 +18,16 @@ export function runSkills(args: string[]): number {
   const result = isWindows
     ? spawnSync("npx", argv.map(quoteArg), { stdio: "inherit", shell: true })
     : spawnSync("npx", argv, { stdio: "inherit" });
+
   if (result.error) {
     const err = result.error as NodeJS.ErrnoException;
     const hint = err.code === "ENOENT" ? " (is Node/npx installed and on your PATH?)" : "";
+
     process.stderr.write(`remarque: could not run npx${hint}: ${err.message}\n`);
+
     return 1;
   }
+
   return result.status ?? 1;
 }
 
@@ -47,11 +51,20 @@ Run \`remarque skills add --help\` for the installer's full flag list.`;
 
 export function handleSkills(args: string[]): number {
   const [sub, ...rest] = args;
+
   if (!sub || sub === "-h" || sub === "--help") {
     process.stdout.write(HELP + "\n");
+
     return 0;
   }
-  if (sub === "list") return runSkills(["--list", ...rest]);
-  if (sub === "add") return runSkills(rest);
+
+  if (sub === "list") {
+    return runSkills(["--list", ...rest]);
+  }
+
+  if (sub === "add") {
+    return runSkills(rest);
+  }
+
   return runSkills([sub, ...rest]);
 }

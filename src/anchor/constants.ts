@@ -1,0 +1,2 @@
+export const DEFAULT_CONTEXT_LINES = 3;
+export const DEFAULT_FUZZY_THRESHOLD = 0.6;

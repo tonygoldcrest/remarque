@@ -26,7 +26,7 @@ describe("resolveStore", () => {
     const r = resolveStore(root, "main");
     expect(r.scope).toBe("repo");
     expect(r.source).toBe("local");
-    expect(r.file).toBe(path.join(root, ".review", "main.json"));
+    expect(r.dir).toBe(path.join(root, ".review", "main"));
   });
 
   it("honors REMARQUE_STORE_DIR as a global override keyed per repo", () => {
@@ -35,8 +35,8 @@ describe("resolveStore", () => {
     process.env.REMARQUE_STORE_DIR = store;
     const r = resolveStore(root, "feat/x");
     expect(r.source).toBe("env");
-    expect(r.file.startsWith(store)).toBe(true);
-    expect(r.file.endsWith(path.join("feat-x.json"))).toBe(true);
+    expect(r.dir.startsWith(store)).toBe(true);
+    expect(r.dir.endsWith(path.join("feat-x"))).toBe(true);
   });
 });
 

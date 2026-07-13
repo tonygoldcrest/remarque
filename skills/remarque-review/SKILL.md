@@ -58,27 +58,39 @@ Go beyond style. For each change, ask:
 
 Prefer a few high-value comments over many trivial ones.
 
-## 4. Comment on specific lines
+## 4. Submit the whole review in one command
 
-Anchor each comment to the exact line it is about — the `new` side for
-added/changed code, the `old` side for something being removed. Use the
-`remarque agent` verbs so your comments are attributed to the agent, not a human:
+Collect every comment and send them together with `remarque agent review`, which
+reads a JSON payload on stdin. **Submit once, at the end** — one command for the
+whole review, not one command per comment (each separate invocation restarts the
+CLI and is much slower):
 
 ```sh
-remarque agent comment --file src/app.ts --line 42 --side new --body "This throws when items is empty — guard it?"
-remarque agent comment --file src/app.ts --line 60 --end-line 68 --body "Extract this into a helper; it is duplicated below."
+remarque agent review <<'JSON'
+{
+  "comments": [
+    { "file": "src/app.ts", "line": 42, "side": "new", "body": "This throws when items is empty — guard it?" },
+    { "file": "src/app.ts", "line": 60, "endLine": 68, "body": "Extract this into a helper; it is duplicated below." }
+  ],
+  "general": [
+    { "body": "Needs tests for the retry path before this can merge." }
+  ]
+}
+JSON
 ```
 
-- Always use `remarque agent comment` (not plain `remarque comment`) — the plain
-  verb records the comment as `human`.
-- `--line` (and optional `--end-line`) are line numbers on that side.
+- Use `remarque agent review` (the `agent` form) so comments are attributed to the
+  agent, not a human.
+- Anchor each comment to the exact line it is about — the `new` side (default) for
+  added/changed code, the `old` side for something being removed. `line` (and
+  optional `endLine`) are line numbers on that side.
+- `general` holds feedback not tied to a line; omit it if you have none.
 - Keep each comment to one concern, phrased as an actionable question or
   suggestion, so it can be addressed one thread at a time.
-- For feedback not tied to a line, use a diff-level comment:
 
-  ```sh
-  remarque agent general-comment --body "Needs tests for the retry path before this can merge."
-  ```
+If you truly need to add a single comment (e.g. a follow-up), the one-shot verbs
+still exist: `remarque agent comment --file <p> --line <n> --body <t>` and
+`remarque agent general-comment --body <t>`.
 
 ## 5. Confirm
 

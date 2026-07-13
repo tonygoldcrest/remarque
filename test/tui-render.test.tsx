@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 import { describe, it, expect, afterAll } from "vitest";
 import { render } from "ink-testing-library";
 
-import { Panel } from "../src/tui/ui";
+import { Panel } from "../src/tui/components/panel";
 import type { DisplayRow, FileEntry } from "../src/tui/model";
 import type { ResolvedThread } from "../src/protocol";
 
@@ -22,10 +22,14 @@ const thread: ResolvedThread = {
   currentEndLine: 11,
 };
 
+function entry(file: string, status: FileEntry["status"], open: number, total: number): FileEntry {
+  return { file, status, general: false, open, resolved: total - open, dismissed: 0, total };
+}
+
 const files: FileEntry[] = [
-  { file: "src/app.ts", status: "modified", open: 2, total: 2 },
-  { file: "src/util.ts", status: "added", open: 0, total: 0 },
-  { file: "README.md", status: "modified", open: 0, total: 1 },
+  entry("src/app.ts", "modified", 2, 2),
+  entry("src/util.ts", "added", 0, 0),
+  entry("README.md", "modified", 0, 1),
 ];
 
 const rows: DisplayRow[] = [
@@ -87,10 +91,14 @@ describe("Panel render", () => {
   );
   afterAll(() => app.unmount());
   const frame = app.lastFrame() ?? "";
-  if (process.env.TUI_DUMP) writeFileSync(process.env.TUI_DUMP, frame);
+  if (process.env.TUI_DUMP) {
+    writeFileSync(process.env.TUI_DUMP, frame);
+  }
 
   it("emits truecolor background codes when color is enabled", () => {
-    if (!process.env.FORCE_COLOR) return;
+    if (!process.env.FORCE_COLOR) {
+      return;
+    }
     expect(frame).toMatch(TRUECOLOR);
   });
 

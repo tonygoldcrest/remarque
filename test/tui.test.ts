@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parsePatch } from "../src/tui/parse";
 import {
   buildDisplayRows,
+  buildGeneralRows,
   chunkStarts,
   computeUnits,
   navigate,
@@ -9,9 +10,16 @@ import {
   seekIndex,
   selectionKey,
   fileList,
+  GENERAL_FILE,
 } from "../src/tui/model";
 import type { DisplayRow } from "../src/tui/model";
-import type { DiffFile, ResolvedThread, ReviewState, StructuredDiff } from "../src/protocol";
+import type {
+  DiffFile,
+  GeneralComment,
+  ResolvedThread,
+  ReviewState,
+  StructuredDiff,
+} from "../src/protocol";
 
 const patch = [
   "diff --git a/f b/f",
@@ -146,7 +154,9 @@ describe("buildDisplayRows", () => {
     );
     expect(comments.length).toBeGreaterThan(1);
     for (const c of comments) {
-      if (c.kind !== "comment") continue;
+      if (c.kind !== "comment") {
+        continue;
+      }
       const len =
         c.tone === "start" ? c.lead.length + c.author.length + 1 + c.body.length : c.text.length;
       expect(len).toBeLessThanOrEqual(30);
@@ -185,13 +195,15 @@ describe("chunk and thread jumps", () => {
     expect(rows[threads[0]].kind).toBe("comment");
   });
 
-  it("seekIndex moves forward and backward, returning null past the ends", () => {
+  it("seekIndex moves forward and backward, wrapping past the ends", () => {
     const idx = [2, 5, 9];
     expect(seekIndex(idx, 0, 1)).toBe(2);
     expect(seekIndex(idx, 2, 1)).toBe(5);
-    expect(seekIndex(idx, 9, 1)).toBeNull();
+    expect(seekIndex(idx, 9, 1)).toBe(2);
     expect(seekIndex(idx, 9, -1)).toBe(5);
-    expect(seekIndex(idx, 2, -1)).toBeNull();
+    expect(seekIndex(idx, 2, -1)).toBe(9);
+    expect(seekIndex([], 0, 1)).toBeNull();
+    expect(seekIndex([], 0, -1)).toBeNull();
   });
 });
 
@@ -246,17 +258,27 @@ describe("navigation by unit", () => {
     text: s,
   });
 
-  it("moves one unit per press and scrolls the viewport", () => {
+  it("scrolls one line at a time in both directions, cursor riding the edge", () => {
     const rows = [line(1), line(2), line(3), line(4), line(5)];
     const { units, unitOf } = computeUnits(rows);
     expect(units).toHaveLength(5);
     let v = { row: 0, top: 0 };
     v = navigate(rows, units, unitOf, v, 1, 3);
-    expect(v.row).toBe(1);
+    expect(v).toEqual({ row: 1, top: 0 });
     v = navigate(rows, units, unitOf, v, 1, 3);
-    expect(v.row).toBe(2);
+    expect(v).toEqual({ row: 2, top: 0 });
     v = navigate(rows, units, unitOf, v, 1, 3);
+    expect(v).toEqual({ row: 3, top: 1 });
+    v = navigate(rows, units, unitOf, v, 1, 3);
+    expect(v).toEqual({ row: 4, top: 2 });
+    v = navigate(rows, units, unitOf, v, -1, 3);
     expect(v).toEqual({ row: 3, top: 2 });
+    v = navigate(rows, units, unitOf, v, -1, 3);
+    expect(v).toEqual({ row: 2, top: 2 });
+    v = navigate(rows, units, unitOf, v, -1, 3);
+    expect(v).toEqual({ row: 1, top: 1 });
+    v = navigate(rows, units, unitOf, v, -1, 3);
+    expect(v).toEqual({ row: 0, top: 0 });
   });
 
   it("brings a clipped comment fully into view before advancing", () => {
@@ -267,6 +289,16 @@ describe("navigation by unit", () => {
     expect(v).toEqual({ row: 1, top: 1 });
     v = navigate(rows, units, unitOf, v, 1, 3);
     expect(v.row).toBe(4);
+  });
+
+  it("wraps from the last unit to the first and back", () => {
+    const rows = [line(1), line(2), line(3)];
+    const { units, unitOf } = computeUnits(rows);
+    let v = { row: 2, top: 0 };
+    v = navigate(rows, units, unitOf, v, 1, 3);
+    expect(v.row).toBe(0);
+    v = navigate(rows, units, unitOf, v, -1, 3);
+    expect(v.row).toBe(2);
   });
 
   it("sub-scrolls an oversized comment in window-fitting chunks", () => {
@@ -301,6 +333,85 @@ describe("fileList", () => {
       threads: [thread("a", 2, "open"), thread("b", 3, "resolved")],
       generalComments: [],
     };
-    expect(fileList(diff, state)).toEqual([{ file: "f", status: "modified", open: 1, total: 2 }]);
+    expect(fileList(diff, state)).toEqual([
+      {
+        file: GENERAL_FILE,
+        status: "modified",
+        general: true,
+        open: 0,
+        resolved: 0,
+        dismissed: 0,
+        total: 0,
+      },
+      {
+        file: "f",
+        status: "modified",
+        general: false,
+        open: 1,
+        resolved: 1,
+        dismissed: 0,
+        total: 2,
+      },
+    ]);
+  });
+
+  it("lifts files with threads above files without, keeping diff order within groups", () => {
+    const file = (name: string): DiffFile => ({
+      file: name,
+      oldFile: null,
+      status: "modified",
+      patch,
+    });
+    const diff: StructuredDiff = {
+      base: "HEAD",
+      compare: "WORKING",
+      files: [file("a"), file("b"), file("c")],
+    };
+    const state: ReviewState = {
+      schemaVersion: 1,
+      session: null,
+      threads: [{ ...thread("t", 2, "resolved"), file: "c" }],
+      generalComments: [],
+    };
+    expect(fileList(diff, state).map((e) => e.file)).toEqual([GENERAL_FILE, "c", "a", "b"]);
+  });
+
+  it("prepends a general pseudo-file with its own status counts", () => {
+    const gc = (id: string, status: GeneralComment["status"]): GeneralComment => ({
+      id,
+      sessionId: "s",
+      status,
+      resolution: null,
+      messages: [{ id: "m", author: "agent", body: "overall", at: "t" }],
+      createdAt: "t",
+      updatedAt: "t",
+    });
+    const diff: StructuredDiff = {
+      base: "HEAD",
+      compare: "WORKING",
+      files: [{ file: "f", oldFile: null, status: "modified", patch }],
+    };
+    const state: ReviewState = {
+      schemaVersion: 1,
+      session: null,
+      threads: [],
+      generalComments: [gc("g1", "open"), gc("g2", "dismissed")],
+    };
+    const list = fileList(diff, state);
+    expect(list[0]).toEqual({
+      file: GENERAL_FILE,
+      status: "modified",
+      general: true,
+      open: 1,
+      resolved: 0,
+      dismissed: 1,
+      total: 2,
+    });
+    const rows = buildGeneralRows(state, 40);
+    const starts = rows.filter((r) => r.kind === "comment" && r.tone === "start");
+    expect(starts).toHaveLength(2);
+    expect(
+      rows.every((r) => r.kind !== "comment" || r.thread.id === "g1" || r.thread.id === "g2"),
+    ).toBe(true);
   });
 });
