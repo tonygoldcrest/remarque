@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import type { GlobalConfig, LocalConfig } from "./types";
-import { globalConfigPath, globalDataDefault, localConfigPath } from "./paths";
+import type { GlobalConfig, LocalConfig } from "./types.js";
+import { globalConfigPath, globalDataDefault, localConfigPath } from "./paths.js";
 
 function isMissingFile(e: unknown): boolean {
   return (e as NodeJS.ErrnoException).code === "ENOENT";

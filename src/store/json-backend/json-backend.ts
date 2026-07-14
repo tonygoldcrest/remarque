@@ -2,10 +2,10 @@ import path from "node:path";
 import lockfile from "proper-lockfile";
 import fs from "node:fs/promises";
 
-import { emptyStore, SCHEMA_VERSION, type ReviewStore, type Session } from "../../protocol";
-import type { StorageBackend } from "../backend";
-import type { Manifest, SessionData } from "./types";
-import { readJsonFile, writeJsonFile } from "./helpers";
+import { emptyStore, SCHEMA_VERSION, type ReviewStore, type Session } from "../../protocol.js";
+import type { StorageBackend } from "../backend.js";
+import type { Manifest, SessionData } from "./types.js";
+import { readJsonFile, writeJsonFile } from "./helpers.js";
 
 const LOCK_OPTS = {
   realpath: false as const,

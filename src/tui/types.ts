@@ -1,4 +1,4 @@
-import type { Side } from "../protocol";
+import type { Side } from "../protocol.js";
 
 export type Focus = "removed" | "added";
 

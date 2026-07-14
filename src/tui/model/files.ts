@@ -1,5 +1,5 @@
-import type { ReviewState, StructuredDiff, ThreadStatus } from "../../protocol";
-import type { FileEntry, FileSection, StagingGroups, StatusCounts } from "./types";
+import type { ReviewState, StructuredDiff, ThreadStatus } from "../../protocol.js";
+import type { FileEntry, FileSection, StagingGroups, StatusCounts } from "./types.js";
 
 function isUnresolved(item: { status: ThreadStatus }): boolean {
   return item.status === "open" || item.status === "outdated";

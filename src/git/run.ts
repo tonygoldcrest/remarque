@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 
-import type { LenientResult, RunOptions } from "./types";
+import type { LenientResult, RunOptions } from "./types.js";
 
 export class GitError extends Error {
   constructor(

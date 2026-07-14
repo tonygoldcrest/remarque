@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { chunkStarts, seekIndex, threadStarts } from "../model";
-import type { DisplayRow } from "../model";
+import { chunkStarts, seekIndex, threadStarts } from "../model/index.js";
+import type { DisplayRow } from "../model/index.js";
 
 interface JumpArgs {
   rows: DisplayRow[];

@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 
-import { WORKING_TREE, type ReviewStore, type Session } from "../protocol";
-import type { ReviewContext, SessionSummary } from "./types";
-import { now } from "./helpers";
+import { WORKING_TREE, type ReviewStore, type Session } from "../protocol.js";
+import type { ReviewContext, SessionSummary } from "./types.js";
+import { now } from "./helpers.js";
 
 export async function currentSession(ctx: ReviewContext): Promise<Session | null> {
   const store = await ctx.backend.read();

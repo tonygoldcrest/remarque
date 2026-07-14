@@ -1,6 +1,6 @@
-import * as git from "../git";
-import { JsonBackend } from "../store/json-backend";
-import { resolveStore } from "../config";
+import * as git from "../git/index.js";
+import { JsonBackend } from "../store/json-backend/index.js";
+import { resolveStore } from "../config/index.js";
 import type {
   Author,
   GeneralComment,
@@ -9,7 +9,7 @@ import type {
   Session,
   StructuredDiff,
   Thread,
-} from "../protocol";
+} from "../protocol.js";
 import type {
   ApplyAction,
   ApplyResult,
@@ -20,12 +20,12 @@ import type {
   ReviewContext,
   ReviewItem,
   SessionSummary,
-} from "./types";
-import * as sessions from "./sessions";
-import * as items from "./items";
-import { plainDiff, structuredDiff } from "./diff";
-import { buildState } from "./state";
-import { newMessage, now } from "./helpers";
+} from "./types.js";
+import * as sessions from "./sessions.js";
+import * as items from "./items.js";
+import { plainDiff, structuredDiff } from "./diff.js";
+import { buildState } from "./state.js";
+import { newMessage, now } from "./helpers.js";
 
 export class Review {
   private constructor(private readonly ctx: ReviewContext) {}

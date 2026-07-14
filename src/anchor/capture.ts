@@ -1,7 +1,7 @@
-import type { Anchor } from "../protocol";
-import type { CaptureInput } from "./types";
-import { DEFAULT_CONTEXT_LINES } from "./constants";
-import { clamp, splitLines } from "./helpers";
+import type { Anchor } from "../protocol.js";
+import type { CaptureInput } from "./types.js";
+import { DEFAULT_CONTEXT_LINES } from "./constants.js";
+import { clamp, splitLines } from "./helpers.js";
 
 export function captureAnchor(input: CaptureInput): Anchor {
   const context = input.contextLines ?? DEFAULT_CONTEXT_LINES;

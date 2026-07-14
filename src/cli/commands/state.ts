@@ -1,10 +1,10 @@
 import type { Command } from "commander";
 
-import type { WatchEvent } from "../../protocol";
-import type { Review } from "../../review";
-import { watchStore } from "../../store/watch";
-import { fmtGeneral, fmtThread } from "../format";
-import { out, short, withReview } from "../helpers";
+import type { WatchEvent } from "../../protocol.js";
+import type { Review } from "../../review/index.js";
+import { watchStore } from "../../store/watch.js";
+import { fmtGeneral, fmtThread } from "../format.js";
+import { out, short, withReview } from "../helpers.js";
 
 function registerState(program: Command): void {
   program

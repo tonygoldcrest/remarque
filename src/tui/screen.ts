@@ -1,7 +1,11 @@
+import theme from "./theme.js";
+
 const ALT_SCREEN_ON = "[?1049h";
 const ALT_SCREEN_OFF = "[?1049l";
 const HIDE_CURSOR = "[?25l";
 const SHOW_CURSOR = "[?25h";
+const SET_BG = "]11;" + theme.appBg + "";
+const RESET_BG = "]111";
 const BEGIN_SYNC = "[?2026h";
 const END_SYNC = "[?2026l";
 
@@ -11,7 +15,7 @@ export function enterFullscreen(): () => void {
   const stdout = process.stdout;
   const original = stdout.write.bind(stdout) as (...args: WriteArgs) => boolean;
 
-  original(ALT_SCREEN_ON + HIDE_CURSOR);
+  original(ALT_SCREEN_ON + HIDE_CURSOR + SET_BG);
 
   const wrapped = (...args: WriteArgs): boolean => {
     const [chunk, ...rest] = args;
@@ -35,7 +39,7 @@ export function enterFullscreen(): () => void {
     restored = true;
     stdout.write = original as typeof stdout.write;
 
-    original(SHOW_CURSOR + ALT_SCREEN_OFF);
+    original(RESET_BG + SHOW_CURSOR + ALT_SCREEN_OFF);
   };
 
   process.once("exit", restore);

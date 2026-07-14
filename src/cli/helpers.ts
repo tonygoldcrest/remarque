@@ -1,11 +1,13 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { Review } from "../review";
+import { Review } from "../review/index.js";
 
 export function readVersion(): string {
   try {
-    const pkg = readFileSync(path.join(__dirname, "..", "..", "package.json"), "utf8");
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const pkg = readFileSync(path.join(here, "..", "..", "package.json"), "utf8");
 
     return (JSON.parse(pkg) as { version?: string }).version ?? "0.0.0";
   } catch {

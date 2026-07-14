@@ -1,1 +1,1 @@
-export { CodeCell } from "./code-cell";
+export { CodeCell } from "./code-cell.js";

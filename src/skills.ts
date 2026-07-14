@@ -1,10 +1,11 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const SKILLS_PKG = "skills@1";
 
 export function bundledRoot(): string {
-  return path.join(__dirname, "..");
+  return path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 }
 
 const isWindows = process.platform === "win32";

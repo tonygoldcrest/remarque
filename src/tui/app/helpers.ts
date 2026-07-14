@@ -1,9 +1,9 @@
 import type { Key } from "ink";
 
-import type { Review, ReviewItem } from "../../review";
-import type { DisplayRow, FileEntry } from "../model";
-import type { Focus } from "../types";
-import type { ComposerIntent, StatusKey } from "./types";
+import type { Review, ReviewItem } from "../../review/index.js";
+import type { DisplayRow, FileEntry } from "../model/index.js";
+import type { Focus } from "../types.js";
+import type { ComposerIntent, StatusKey } from "./types.js";
 
 function isDeleteChunk(ch: string): boolean {
   return ch.length > 0 && [...ch].every((c) => c === "\u007F" || c === "\u0008");

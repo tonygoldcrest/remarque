@@ -1,3 +1,5 @@
+export const THEME = "github-dark-default";
+
 export const SCOPE_COLORS: Record<string, string> = {
   "hljs-keyword": "#ff7b72",
   "hljs-built_in": "#ffa657",
@@ -20,16 +22,29 @@ export const SCOPE_COLORS: Record<string, string> = {
   "hljs-symbol": "#79c0ff",
 };
 
+export const HLJS_BY_SHIKI: Record<string, string> = {
+  tsx: "typescript",
+  jsx: "javascript",
+  jsonc: "json",
+  shellscript: "bash",
+  html: "xml",
+  svelte: "xml",
+  vue: "xml",
+  toml: "ini",
+  docker: "dockerfile",
+};
+
 export const LANG_BY_EXT: Record<string, string> = {
   ts: "typescript",
-  tsx: "typescript",
   mts: "typescript",
   cts: "typescript",
+  tsx: "tsx",
   js: "javascript",
-  jsx: "javascript",
   mjs: "javascript",
   cjs: "javascript",
+  jsx: "jsx",
   json: "json",
+  jsonc: "jsonc",
   py: "python",
   rb: "ruby",
   go: "go",
@@ -42,22 +57,32 @@ export const LANG_BY_EXT: Record<string, string> = {
   hpp: "cpp",
   cs: "csharp",
   php: "php",
-  sh: "bash",
-  bash: "bash",
-  zsh: "bash",
+  sh: "shellscript",
+  bash: "shellscript",
+  zsh: "shellscript",
   yml: "yaml",
   yaml: "yaml",
+  toml: "toml",
   md: "markdown",
-  html: "xml",
+  html: "html",
   xml: "xml",
-  svelte: "xml",
-  vue: "xml",
+  svelte: "svelte",
+  vue: "vue",
   css: "css",
   scss: "scss",
+  less: "less",
   sql: "sql",
   lua: "lua",
   swift: "swift",
   kt: "kotlin",
+  dart: "dart",
+  ex: "elixir",
+  exs: "elixir",
+  zig: "zig",
+  prisma: "prisma",
+  graphql: "graphql",
+  dockerfile: "docker",
+  tf: "terraform",
 };
 
 export const TOKEN_CACHE_LIMIT = 5000;

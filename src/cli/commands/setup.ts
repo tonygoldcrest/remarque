@@ -2,9 +2,9 @@ import type { Command } from "commander";
 import { Option } from "commander";
 import { confirm, input, select } from "@inquirer/prompts";
 
-import * as git from "../../git";
-import { Review } from "../../review";
-import { handleSkills } from "../../skills";
+import * as git from "../../git/index.js";
+import { Review } from "../../review/index.js";
+import { handleSkills } from "../../skills.js";
 import {
   addToGitignore,
   globalConfigPath,
@@ -15,8 +15,8 @@ import {
   resolveStore,
   saveLocalConfig,
   type StoreScope,
-} from "../../config";
-import { guarded } from "../helpers";
+} from "../../config/index.js";
+import { guarded } from "../helpers.js";
 
 interface InitOptions {
   scope?: StoreScope;

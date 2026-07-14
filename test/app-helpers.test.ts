@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import type { Key } from "ink";
 
-import { composerIntent, editValue } from "../src/tui/app/helpers";
-import { wrapWords } from "../src/tui/model/wrap";
-import type { DisplayRow, FileEntry } from "../src/tui/model";
-import type { ResolvedThread } from "../src/protocol";
+import { composerIntent, editValue } from "../src/tui/app/helpers.js";
+import { wrapWords } from "../src/tui/model/wrap.js";
+import type { DisplayRow, FileEntry } from "../src/tui/model/index.js";
+import type { ResolvedThread } from "../src/protocol.js";
 
 const thread: ResolvedThread = {
   id: "t1",

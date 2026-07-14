@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { captureAnchor, resolveAnchor, sim, levenshtein, splitLines } from "../src/anchor";
+import { captureAnchor, resolveAnchor, sim, levenshtein, splitLines } from "../src/anchor/index.js";
 
 const content = "a\nb\nTARGET\nc\nd\n";
 const anchor = captureAnchor({ content, blobSha: "sha1", line: 3, endLine: 3 });

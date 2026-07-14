@@ -1,10 +1,10 @@
 import type { Command } from "commander";
 
-import type { Author } from "../../protocol";
-import { fmtGeneral, fmtThread } from "../format";
-import { out, readPayload, withReview } from "../helpers";
-import { authorOption } from "../options";
-import { parseApplyPayload, parseReviewPayload } from "../payload";
+import type { Author } from "../../protocol.js";
+import { fmtGeneral, fmtThread } from "../format.js";
+import { out, readPayload, withReview } from "../helpers.js";
+import { authorOption } from "../options.js";
+import { parseApplyPayload, parseReviewPayload } from "../payload.js";
 
 function registerReview(cmd: Command, defaultAuthor: Author): void {
   cmd

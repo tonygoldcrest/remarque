@@ -1,1 +1,1 @@
-export { SideRow } from "./side-row";
+export { SideRow } from "./side-row.js";

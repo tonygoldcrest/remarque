@@ -1,9 +1,9 @@
 import React from "react";
 import { Text } from "ink";
-import { FileEntry } from "../../model";
-import { STATUS_COLOR, STATUS_MARK } from "./constants";
-import { fileLabel } from "./helpers";
-import theme from "../../theme";
+import { FileEntry } from "../../model/index.js";
+import { STATUS_COLOR, STATUS_MARK } from "./constants.js";
+import { fileLabel } from "./helpers.js";
+import theme from "../../theme.js";
 
 export const FileRow = React.memo(function FileRow({
   entry,

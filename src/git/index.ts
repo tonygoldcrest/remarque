@@ -1,4 +1,4 @@
-export { GitError } from "./run";
+export { GitError } from "./run.js";
 export {
   blobSha,
   diff,
@@ -10,5 +10,5 @@ export {
   stagingStatus,
   unstage,
   untrackedFiles,
-} from "./git";
-export type { RepoInfo, StagingStatus } from "./types";
+} from "./git.js";
+export type { RepoInfo, StagingStatus } from "./types.js";

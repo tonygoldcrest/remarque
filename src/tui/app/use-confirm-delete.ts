@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import type { Review } from "../../review";
-import type { DeleteRequest } from "../types";
+import type { Review } from "../../review/index.js";
+import type { DeleteRequest } from "../types.js";
 
 interface ConfirmDeleteArgs {
   review: Review;

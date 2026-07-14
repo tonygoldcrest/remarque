@@ -1,20 +1,23 @@
 import React from "react";
 import { Text } from "ink";
 
-import { clipTokens, tokenize } from "../../highlight";
-import theme from "../../theme";
-import { Cell } from "./types";
+import { clipTokens, tokenize } from "../../highlight/index.js";
+import type { Token } from "../../highlight/index.js";
+import theme from "../../theme.js";
+import { Cell } from "./types.js";
 
 export function CodeCell({
   cell,
   width,
   cursor,
   lang,
+  tokens: lineTokens,
 }: {
   cell: Cell;
   width: number;
   cursor: boolean;
   lang: string | null;
+  tokens?: Token[] | null;
 }) {
   const num = (cell.num == null ? "" : String(cell.num)).padStart(4);
   const sign = cell.type === "add" ? "+" : cell.type === "del" ? "-" : " ";
@@ -31,7 +34,7 @@ export function CodeCell({
   const tokens =
     cell.type === "empty"
       ? [{ text: " ".repeat(codeW) }]
-      : clipTokens(tokenize(cell.text, lang), codeW);
+      : clipTokens(lineTokens ?? tokenize(cell.text, lang), codeW);
 
   return (
     <Text wrap="truncate">

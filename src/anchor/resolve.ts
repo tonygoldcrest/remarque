@@ -1,8 +1,8 @@
-import type { Anchor } from "../protocol";
-import type { LineMatch, ResolveOptions, ResolvedPosition } from "./types";
-import { DEFAULT_FUZZY_THRESHOLD } from "./constants";
-import { splitLines } from "./helpers";
-import { sim } from "./similarity";
+import type { Anchor } from "../protocol.js";
+import type { LineMatch, ResolveOptions, ResolvedPosition } from "./types.js";
+import { DEFAULT_FUZZY_THRESHOLD } from "./constants.js";
+import { splitLines } from "./helpers.js";
+import { sim } from "./similarity.js";
 
 function contextScore(anchor: Anchor, lines: string[], i: number): number {
   let sum = 0;

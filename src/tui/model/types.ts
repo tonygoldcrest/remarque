@@ -1,5 +1,5 @@
-import type { DiffFileStatus, ResolvedThread } from "../../protocol";
-import type { Row } from "../parse";
+import type { DiffFileStatus, ResolvedThread } from "../../protocol.js";
+import type { Row } from "../parse/index.js";
 
 export interface FileEntry {
   file: string;

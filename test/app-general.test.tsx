@@ -5,9 +5,9 @@ import path from "node:path";
 import { describe, it, expect, vi } from "vitest";
 import { render } from "ink-testing-library";
 
-import { App } from "../src/tui/app";
-import type { Review } from "../src/review";
-import type { GeneralComment, ReviewState, StructuredDiff } from "../src/protocol";
+import { App } from "../src/tui/app/index.js";
+import type { Review } from "../src/review/index.js";
+import type { GeneralComment, ReviewState, StructuredDiff } from "../src/protocol.js";
 
 const patch = ["@@ -1,2 +1,2 @@", " context", "-old line", "+new line", ""].join("\n");
 

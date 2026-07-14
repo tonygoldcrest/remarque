@@ -1,6 +1,6 @@
-export * from "./protocol";
-export { Review } from "./review";
-export type { OpenOptions, CommentInput, SessionSummary } from "./review";
+export * from "./protocol.js";
+export { Review } from "./review/index.js";
+export type { OpenOptions, CommentInput, SessionSummary } from "./review/index.js";
 export {
   captureAnchor,
   resolveAnchor,
@@ -9,10 +9,10 @@ export {
   splitLines,
   DEFAULT_CONTEXT_LINES,
   DEFAULT_FUZZY_THRESHOLD,
-} from "./anchor";
-export type { CaptureInput, ResolveOptions, ResolvedPosition } from "./anchor";
-export { JsonBackend } from "./store/json-backend";
-export type { StorageBackend } from "./store/backend";
+} from "./anchor/index.js";
+export type { CaptureInput, ResolveOptions, ResolvedPosition } from "./anchor/index.js";
+export { JsonBackend } from "./store/json-backend/index.js";
+export type { StorageBackend } from "./store/backend.js";
 export {
   resolveStore,
   loadGlobalConfig,
@@ -23,5 +23,5 @@ export {
   globalDataDefault,
   isInsideRepo,
   addToGitignore,
-} from "./config";
-export type { LocalConfig, GlobalConfig, ResolvedStore, StoreScope } from "./config";
+} from "./config/index.js";
+export type { LocalConfig, GlobalConfig, ResolvedStore, StoreScope } from "./config/index.js";

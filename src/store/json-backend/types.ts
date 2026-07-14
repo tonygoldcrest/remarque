@@ -1,4 +1,4 @@
-import type { GeneralComment, Session, Thread } from "../../protocol";
+import type { GeneralComment, Session, Thread } from "../../protocol.js";
 
 export interface Manifest {
   schemaVersion: number;

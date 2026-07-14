@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import * as git from "../git";
-import { WORKING_TREE, type Side } from "../protocol";
-import type { DiffRefs, ReviewContext, SideContent, SideContentReader } from "./types";
+import * as git from "../git/index.js";
+import { WORKING_TREE, type Side } from "../protocol.js";
+import type { DiffRefs, ReviewContext, SideContent, SideContentReader } from "./types.js";
 
 export async function effectiveBase(ctx: ReviewContext, base: string): Promise<string> {
   if (base !== "HEAD") {

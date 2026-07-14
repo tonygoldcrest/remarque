@@ -1,4 +1,4 @@
-import type { ReviewStore } from "../protocol";
+import type { ReviewStore } from "../protocol.js";
 
 export interface StorageBackend {
   read(): Promise<ReviewStore>;

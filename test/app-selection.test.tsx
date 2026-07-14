@@ -5,9 +5,9 @@ import path from "node:path";
 import { describe, it, expect } from "vitest";
 import { render } from "ink-testing-library";
 
-import { App } from "../src/tui/app";
-import type { Review } from "../src/review";
-import type { ReviewState, StructuredDiff } from "../src/protocol";
+import { App } from "../src/tui/app/index.js";
+import type { Review } from "../src/review/index.js";
+import type { ReviewState, StructuredDiff } from "../src/protocol.js";
 
 const patchA = ["@@ -1,1 +1,1 @@", "-a", "+AAA_MARKER", ""].join("\n");
 const patchB = ["@@ -1,1 +1,1 @@", "-b", "+BBB_MARKER", ""].join("\n");

@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 
-import { WORKING_TREE } from "../protocol";
-import type { RepoInfo, StagingStatus } from "./types";
-import { runGit, runGitLenient } from "./run";
+import { WORKING_TREE } from "../protocol.js";
+import type { RepoInfo, StagingStatus } from "./types.js";
+import { runGit, runGitLenient } from "./run.js";
 
 export async function repoInfo(cwd: string): Promise<RepoInfo | null> {
   const result = await runGitLenient(["rev-parse", "--show-toplevel", "--abbrev-ref", "HEAD"], cwd);

@@ -1,7 +1,11 @@
-import type { Cell, Row } from "./types";
+import type { Cell, Row } from "./types.js";
 
 const EMPTY: Cell = { num: null, text: "", type: "empty" };
 const HUNK_HEADER = /@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
+
+function cleanText(text: string): string {
+  return text.replace(/\t/g, "    ").replace(/\p{C}/gu, "");
+}
 
 export function parsePatch(patch: string): Row[] {
   const rows: Row[] = [];
@@ -44,7 +48,7 @@ export function parsePatch(patch: string): Row[] {
     }
 
     const marker = line[0];
-    const text = line.slice(1);
+    const text = cleanText(line.slice(1));
 
     if (marker === " ") {
       flush();

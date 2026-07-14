@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { Key } from "ink";
 
-import type { Review } from "../../review";
-import type { Composer, ComposerTarget } from "../types";
-import { editValue } from "./helpers";
+import type { Review } from "../../review/index.js";
+import type { Composer, ComposerTarget } from "../types.js";
+import { editValue } from "./helpers.js";
 
 interface ComposerArgs {
   review: Review;

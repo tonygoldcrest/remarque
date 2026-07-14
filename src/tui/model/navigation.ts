@@ -1,4 +1,4 @@
-import type { DisplayRow, Unit, Viewport } from "./types";
+import type { DisplayRow, Unit, Viewport } from "./types.js";
 
 export function computeUnits(rows: DisplayRow[]): { units: Unit[]; unitOf: number[] } {
   const units: Unit[] = [];

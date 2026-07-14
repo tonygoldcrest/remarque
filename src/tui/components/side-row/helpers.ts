@@ -1,4 +1,4 @@
-import theme from "../../theme";
+import theme from "../../theme.js";
 
 export function statusColor(status: string): string {
   switch (status) {

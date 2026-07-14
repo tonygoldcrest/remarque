@@ -1,4 +1,4 @@
-import theme from "../../theme";
+import theme from "../../theme.js";
 
 export const STATUS_MARK: Record<string, string> = {
   added: "A",

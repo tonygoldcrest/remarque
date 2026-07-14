@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { captureAnchor } from "../anchor";
-import type { Author, GeneralComment, Side, Thread } from "../protocol";
+import { captureAnchor } from "../anchor/index.js";
+import type { Author, GeneralComment, Side, Thread } from "../protocol.js";
 import type {
   ApplyAction,
   ApplyResult,
@@ -11,10 +11,10 @@ import type {
   ReviewContext,
   ReviewItem,
   SideContentReader,
-} from "./types";
-import { effectiveBase, sideContentReader } from "./contents";
-import { ensureSession } from "./sessions";
-import { findById, newMessage, now } from "./helpers";
+} from "./types.js";
+import { effectiveBase, sideContentReader } from "./contents.js";
+import { ensureSession } from "./sessions.js";
+import { findById, newMessage, now } from "./helpers.js";
 
 async function buildThread(
   input: CommentInput,

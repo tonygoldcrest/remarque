@@ -1,5 +1,5 @@
-import type { ApplyAction, CommentInput, GeneralCommentInput } from "../review";
-import type { ReviewPayload } from "./types";
+import type { ApplyAction, CommentInput, GeneralCommentInput } from "../review/index.js";
+import type { ReviewPayload } from "./types.js";
 
 function parseJson(raw: string): unknown {
   try {

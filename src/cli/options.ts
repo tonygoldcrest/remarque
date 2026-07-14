@@ -1,6 +1,6 @@
 import { Option } from "commander";
 
-import type { Author } from "../protocol";
+import type { Author } from "../protocol.js";
 
 export function authorOption(defaultAuthor: Author): Option {
   return new Option("--author <who>", "who is speaking")

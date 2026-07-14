@@ -1,14 +1,15 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { selectionKey, type DisplayRow, type FileSection } from "../../model";
-import theme from "../../theme";
-import { fit } from "../helpers";
-import { langForFile } from "../../highlight";
-import { StatusLine } from "../status-line";
-import { SideRow } from "../side-row";
-import { FileRow } from "../file-row";
-import { Composer, DeleteRequest, Focus } from "../../types";
-import { paneWidths, contentHeight } from "../../helpers";
+import { selectionKey, type DisplayRow, type FileSection } from "../../model/index.js";
+import type { SideTokens } from "../../highlight/index.js";
+import theme from "../../theme.js";
+import { fit } from "../helpers.js";
+import { langForFile } from "../../highlight/index.js";
+import { StatusLine } from "../status-line/index.js";
+import { SideRow } from "../side-row/index.js";
+import { FileRow } from "../file-row/index.js";
+import { Composer, DeleteRequest, Focus } from "../../types.js";
+import { paneWidths, contentHeight } from "../../helpers.js";
 
 interface Props {
   base: string;
@@ -17,6 +18,7 @@ interface Props {
   currentFile: string | null;
   rows: DisplayRow[];
   rowIndex: number;
+  highlights?: SideTokens;
   focus: Focus;
   general?: boolean;
   width: number;
@@ -109,6 +111,7 @@ export function Panel(props: Props): React.ReactElement {
                 selected={isSelected(row, scrollTop + i)}
                 focused
                 lang={null}
+                lineTokens={null}
               />
             ))}
           </Box>
@@ -132,6 +135,7 @@ export function Panel(props: Props): React.ReactElement {
                     selected={isSelected(row, scrollTop + i)}
                     focused={focus === "removed"}
                     lang={lang}
+                    lineTokens={props.highlights?.old ?? null}
                   />
                 ))
               )}
@@ -155,6 +159,7 @@ export function Panel(props: Props): React.ReactElement {
                     selected={isSelected(row, scrollTop + i)}
                     focused={focus === "added"}
                     lang={lang}
+                    lineTokens={props.highlights?.new ?? null}
                   />
                 ))
               )}

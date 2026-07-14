@@ -1,8 +1,8 @@
 import React from "react";
 import { Text } from "ink";
-import theme from "../../theme";
-import { fit } from "../helpers";
-import { Composer, DeleteRequest } from "../../types";
+import theme from "../../theme.js";
+import { fit } from "../helpers.js";
+import { Composer, DeleteRequest } from "../../types.js";
 
 interface Props {
   confirm?: DeleteRequest | null;

@@ -1,22 +1,30 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { render, Text, useApp, useInput } from "ink";
 
-import type { Review } from "../../review";
-import { WORKING_TREE } from "../../protocol";
-import { buildDisplayRows, buildGeneralRows, computeUnits, fileList, fileSections } from "../model";
-import { enterFullscreen } from "../screen";
-import type { Focus } from "../types";
-import { contentHeight, paneWidths } from "../helpers";
-import { Panel } from "../components/panel";
-import { composerIntent, statusActions } from "./helpers";
-import type { StatusKey } from "./types";
-import { useComposer } from "./use-composer";
-import { useConfirmDelete } from "./use-confirm-delete";
-import { useJump } from "./use-jump";
-import { useReviewData } from "./use-review-data";
-import { useStaging } from "./use-staging";
-import { useTerminalSize } from "./use-terminal-size";
-import { useViewport } from "./use-viewport";
+import type { Review } from "../../review/index.js";
+import { WORKING_TREE } from "../../protocol.js";
+import {
+  buildDisplayRows,
+  buildGeneralRows,
+  computeUnits,
+  fileList,
+  fileSections,
+} from "../model/index.js";
+import { langForFile } from "../highlight/index.js";
+import { enterFullscreen } from "../screen.js";
+import type { Focus } from "../types.js";
+import { contentHeight, paneWidths } from "../helpers.js";
+import { Panel } from "../components/panel/index.js";
+import { composerIntent, statusActions } from "./helpers.js";
+import type { StatusKey } from "./types.js";
+import { useComposer } from "./use-composer.js";
+import { useConfirmDelete } from "./use-confirm-delete.js";
+import { useHighlights } from "./use-highlights.js";
+import { useJump } from "./use-jump.js";
+import { useReviewData } from "./use-review-data.js";
+import { useStaging } from "./use-staging.js";
+import { useTerminalSize } from "./use-terminal-size.js";
+import { useViewport } from "./use-viewport.js";
 
 export function App({ review }: { review: Review }): React.ReactElement {
   const { exit } = useApp();
@@ -60,6 +68,9 @@ export function App({ review }: { review: Review }): React.ReactElement {
 
     return file ? buildDisplayRows(file, state, { old: removedW - 2, new: addedW - 2 }) : [];
   }, [structured, state, currentEntry, generalOpen, columns]);
+
+  const lang = generalOpen || !currentEntry ? null : langForFile(currentEntry.file);
+  const highlights = useHighlights(rows, lang);
 
   const height = Math.max(6, termRows - 1);
   const contentH = contentHeight(height);
@@ -229,6 +240,7 @@ export function App({ review }: { review: Review }): React.ReactElement {
       currentFile={currentEntry?.file ?? null}
       rows={rows}
       rowIndex={viewport.boundedRow}
+      highlights={highlights}
       scrollTop={viewport.pos.top}
       focus={focus}
       general={generalOpen}

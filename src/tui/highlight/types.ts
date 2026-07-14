@@ -3,6 +3,11 @@ export interface Token {
   color?: string;
 }
 
+export interface SideTokens {
+  old: Token[][] | null;
+  new: Token[][] | null;
+}
+
 export interface HastText {
   type: "text";
   value: string;

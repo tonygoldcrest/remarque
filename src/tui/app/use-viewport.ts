@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { navigate } from "../model";
-import type { DisplayRow, Unit, Viewport } from "../model";
+import { navigate } from "../model/index.js";
+import type { DisplayRow, Unit, Viewport } from "../model/index.js";
 
 interface ViewportArgs {
   rows: DisplayRow[];

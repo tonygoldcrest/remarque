@@ -1,9 +1,9 @@
 import type { Command } from "commander";
 
-import type { GeneralComment, Thread } from "../../protocol";
-import { fmtGeneral, fmtThread } from "../format";
-import { out, withReview } from "../helpers";
-import { authorFilterOption, statusFilterOption } from "../options";
+import type { GeneralComment, Thread } from "../../protocol.js";
+import { fmtGeneral, fmtThread } from "../format.js";
+import { out, withReview } from "../helpers.js";
+import { authorFilterOption, statusFilterOption } from "../options.js";
 
 function byStatus<T extends { status: string }>(items: T[], status?: string): T[] {
   return status ? items.filter((item) => item.status === status) : items;

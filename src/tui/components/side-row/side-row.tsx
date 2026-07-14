@@ -1,10 +1,11 @@
 import React from "react";
 import { Text } from "ink";
-import { DisplayRow } from "../../model";
-import theme from "../../theme";
-import { clip, fit } from "../helpers";
-import { statusColor } from "./helpers";
-import { CodeCell } from "../code-cell";
+import { DisplayRow } from "../../model/index.js";
+import type { Token } from "../../highlight/index.js";
+import theme from "../../theme.js";
+import { clip, fit } from "../helpers.js";
+import { statusColor } from "./helpers.js";
+import { CodeCell } from "../code-cell/index.js";
 
 export const SideRow = React.memo(function SideRow({
   row,
@@ -13,6 +14,7 @@ export const SideRow = React.memo(function SideRow({
   selected,
   focused,
   lang,
+  lineTokens,
 }: {
   row: DisplayRow;
   width: number;
@@ -20,6 +22,7 @@ export const SideRow = React.memo(function SideRow({
   selected: boolean;
   focused: boolean;
   lang: string | null;
+  lineTokens: Token[][] | null;
 }) {
   if (row.kind === "hunk") {
     return <Text> </Text>;
@@ -76,6 +79,9 @@ export const SideRow = React.memo(function SideRow({
   }
 
   const cell = side === "old" ? row.left : row.right;
+  const tokens = cell.num != null ? (lineTokens?.[cell.num - 1] ?? null) : null;
 
-  return <CodeCell cell={cell} width={width} cursor={selected && focused} lang={lang} />;
+  return (
+    <CodeCell cell={cell} width={width} cursor={selected && focused} lang={lang} tokens={tokens} />
+  );
 });

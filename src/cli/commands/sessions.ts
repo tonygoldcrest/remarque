@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 
-import { fmtSession } from "../format";
-import { out, short, withReview } from "../helpers";
+import { fmtSession } from "../format.js";
+import { out, short, withReview } from "../helpers.js";
 
 function registerStart(session: Command): void {
   session

@@ -1,5 +1,5 @@
-import type { GeneralComment, ResolvedThread, Session, Thread } from "../protocol";
-import { short } from "./helpers";
+import type { GeneralComment, ResolvedThread, Session, Thread } from "../protocol.js";
+import { short } from "./helpers.js";
 
 function firstLine(s: string): string {
   const nl = s.indexOf("\n");

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { Review } from "../../review";
-import type { ReviewState, StructuredDiff } from "../../protocol";
-import { watchStore } from "../../store/watch";
+import type { Review } from "../../review/index.js";
+import type { ReviewState, StructuredDiff } from "../../protocol.js";
+import { watchStore } from "../../store/watch.js";
 
 export function useReviewData(review: Review, onError: (e: Error) => void) {
   const [structured, setStructured] = useState<StructuredDiff | null>(null);

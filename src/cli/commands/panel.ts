@@ -1,10 +1,10 @@
 import type { Command } from "commander";
 
-import { Review } from "../../review";
-import { guarded } from "../helpers";
+import { Review } from "../../review/index.js";
+import { guarded } from "../helpers.js";
 
 async function openPanel(review: Review): Promise<void> {
-  const { runApp } = await import("../../tui/app");
+  const { runApp } = await import("../../tui/app/index.js");
 
   await runApp(review);
 }

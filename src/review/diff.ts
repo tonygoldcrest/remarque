@@ -1,10 +1,10 @@
-import * as git from "../git";
-import { WORKING_TREE } from "../protocol";
-import type { DiffFile, DiffFileStatus, Session, StructuredDiff } from "../protocol";
-import type { ReviewContext } from "./types";
-import { FULL_FILE_CONTEXT } from "./constants";
-import { effectiveBase, sideContent } from "./contents";
-import { sessionForRead } from "./sessions";
+import * as git from "../git/index.js";
+import { WORKING_TREE } from "../protocol.js";
+import type { DiffFile, DiffFileStatus, Session, StructuredDiff } from "../protocol.js";
+import type { ReviewContext } from "./types.js";
+import { FULL_FILE_CONTEXT } from "./constants.js";
+import { effectiveBase, sideContent } from "./contents.js";
+import { sessionForRead } from "./sessions.js";
 
 function addedFilePatch(file: string, content: string): string {
   const header = [`diff --git a/${file} b/${file}`, "new file mode 100644"];

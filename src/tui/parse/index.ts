@@ -1,2 +1,2 @@
-export { parsePatch } from "./parse";
-export type { Cell, CellType, Row } from "./types";
+export { parsePatch } from "./parse.js";
+export type { Cell, CellType, Row } from "./types.js";

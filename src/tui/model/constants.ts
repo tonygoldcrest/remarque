@@ -1,5 +1,5 @@
-import type { ThreadStatus } from "../../protocol";
-import type { PaneInner } from "./types";
+import type { ThreadStatus } from "../../protocol.js";
+import type { PaneInner } from "./types.js";
 
 export const GENERAL_FILE = " general";
 

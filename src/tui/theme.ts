@@ -1,5 +1,6 @@
 export default {
-  addBg: "#0c2416",
+  appBg: "#181616",
+  addBg: "#123726",
   delBg: "#2a1518",
   addFg: "#3fb950",
   delFg: "#f85149",

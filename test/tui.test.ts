@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parsePatch } from "../src/tui/parse";
+import { parsePatch } from "../src/tui/parse/index.js";
 import {
   buildDisplayRows,
   buildGeneralRows,
@@ -12,15 +12,15 @@ import {
   fileList,
   fileSections,
   mergeOrder,
-} from "../src/tui/model";
-import type { DisplayRow } from "../src/tui/model";
+} from "../src/tui/model/index.js";
+import type { DisplayRow } from "../src/tui/model/index.js";
 import type {
   DiffFile,
   GeneralComment,
   ResolvedThread,
   ReviewState,
   StructuredDiff,
-} from "../src/protocol";
+} from "../src/protocol.js";
 
 const patch = [
   "diff --git a/f b/f",
@@ -62,6 +62,19 @@ describe("parsePatch", () => {
         kind: "line",
         left: { num: 3, text: "c", type: "context" },
         right: { num: 4, text: "c", type: "context" },
+      },
+    ]);
+  });
+
+  it("strips CRLF carriage returns and expands tabs so lines cannot corrupt the terminal", () => {
+    const crlfPatch = ["@@ -1,1 +1,1 @@", "-old\r", "+\tnew\r", ""].join("\n");
+    const lines = parsePatch(crlfPatch).filter((r) => r.kind === "line");
+
+    expect(lines).toEqual([
+      {
+        kind: "line",
+        left: { num: 1, text: "old", type: "del" },
+        right: { num: 1, text: "    new", type: "add" },
       },
     ]);
   });

@@ -1,1 +1,1 @@
-export { JsonBackend } from "./json-backend";
+export { JsonBackend } from "./json-backend.js";

@@ -1,4 +1,4 @@
-import type { CommentInput, GeneralCommentInput } from "../review";
+import type { CommentInput, GeneralCommentInput } from "../review/index.js";
 
 export interface ReviewPayload {
   comments: CommentInput[];

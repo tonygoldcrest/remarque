@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { createWriteStream } from "node:fs";
 import fs from "node:fs/promises";
 
-import { SCHEMA_VERSION } from "../../protocol";
+import { SCHEMA_VERSION } from "../../protocol.js";
 
 export async function readJsonFile<T extends { schemaVersion: number }>(
   file: string,

@@ -3,9 +3,9 @@ import { writeFileSync } from "node:fs";
 import { describe, it, expect, afterAll } from "vitest";
 import { render } from "ink-testing-library";
 
-import { Panel } from "../src/tui/components/panel";
-import type { DisplayRow, FileEntry } from "../src/tui/model";
-import type { ResolvedThread } from "../src/protocol";
+import { Panel } from "../src/tui/components/panel/index.js";
+import type { DisplayRow, FileEntry } from "../src/tui/model/index.js";
+import type { ResolvedThread } from "../src/protocol.js";
 
 const thread: ResolvedThread = {
   id: "a1b2c3d4e5f6",

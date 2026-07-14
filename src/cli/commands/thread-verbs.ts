@@ -1,9 +1,9 @@
 import type { Command } from "commander";
 
-import type { Author } from "../../protocol";
-import { fmtGeneral, fmtThread } from "../format";
-import { int, out, short, withReview } from "../helpers";
-import { authorOption, sideOption } from "../options";
+import type { Author } from "../../protocol.js";
+import { fmtGeneral, fmtThread } from "../format.js";
+import { int, out, short, withReview } from "../helpers.js";
+import { authorOption, sideOption } from "../options.js";
 
 function registerComment(cmd: Command, defaultAuthor: Author): void {
   cmd

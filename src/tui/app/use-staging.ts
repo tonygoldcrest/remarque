@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { Review } from "../../review";
-import type { FileEntry, StagingGroups } from "../model";
-import { mergeOrder } from "../model";
+import type { Review } from "../../review/index.js";
+import type { FileEntry, StagingGroups } from "../model/index.js";
+import { mergeOrder } from "../model/index.js";
 
 interface StagingArgs {
   review: Review;

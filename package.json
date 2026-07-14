@@ -25,7 +25,7 @@
     "llm"
   ],
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "bin": {
     "remarque": "dist/cli.js"
   },
@@ -44,7 +44,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json && chmod +x dist/cli.js",
@@ -67,7 +67,8 @@
     "ink": "^3",
     "lowlight": "^1",
     "proper-lockfile": "^4.1.2",
-    "react": "^17"
+    "react": "^17",
+    "shiki": "^4.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

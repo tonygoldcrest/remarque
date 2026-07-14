@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 
-import type { ResolvedStore } from "./types";
-import { loadGlobalConfig, loadLocalConfig } from "./storage";
+import type { ResolvedStore } from "./types.js";
+import { loadGlobalConfig, loadLocalConfig } from "./storage.js";
 
 function safeBranch(branch: string): string {
   const cleaned = branch.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");

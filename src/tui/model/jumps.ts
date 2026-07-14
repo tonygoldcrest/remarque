@@ -1,4 +1,4 @@
-import type { DisplayRow } from "./types";
+import type { DisplayRow } from "./types.js";
 
 function isChangeRow(row: DisplayRow | undefined): boolean {
   return !!row && row.kind === "line" && (row.left.type === "del" || row.right.type === "add");

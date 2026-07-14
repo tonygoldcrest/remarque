@@ -9,7 +9,7 @@ import {
   loadLocalConfig,
   isInsideRepo,
   addToGitignore,
-} from "../src/config";
+} from "../src/config/index.js";
 
 function tmp() {
   return mkdtempSync(path.join(tmpdir(), "review-config-"));

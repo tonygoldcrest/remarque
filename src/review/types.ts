@@ -1,6 +1,6 @@
-import type { ResolveOptions } from "../anchor";
-import type { StorageBackend } from "../store/backend";
-import type { Author, GeneralComment, Session, Side, Thread } from "../protocol";
+import type { ResolveOptions } from "../anchor/index.js";
+import type { StorageBackend } from "../store/backend.js";
+import type { Author, GeneralComment, Session, Side, Thread } from "../protocol.js";
 
 export interface ReviewContext {
   backend: StorageBackend;

@@ -1,4 +1,4 @@
-export { Review } from "./review";
+export { Review } from "./review.js";
 export type {
   ApplyAction,
   ApplyResult,
@@ -9,4 +9,4 @@ export type {
   OpenOptions,
   ReviewItem,
   SessionSummary,
-} from "./types";
+} from "./types.js";

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import type { Author, Message, ReviewStore } from "../protocol";
-import type { ReviewItem } from "./types";
+import type { Author, Message, ReviewStore } from "../protocol.js";
+import type { ReviewItem } from "./types.js";
 
 export function now(): string {
   return new Date().toISOString();

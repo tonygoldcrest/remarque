@@ -4,11 +4,11 @@ import type {
   Message,
   ResolvedThread,
   ReviewState,
-} from "../../protocol";
-import { parsePatch } from "../parse";
-import type { DisplayRow, PaneInner } from "./types";
-import { COMPOSE_HINT, GENERAL_FILE, NO_WRAP, STATUS_ICON } from "./constants";
-import { wrapWords } from "./wrap";
+} from "../../protocol.js";
+import { parsePatch } from "../parse/index.js";
+import type { DisplayRow, PaneInner } from "./types.js";
+import { COMPOSE_HINT, GENERAL_FILE, NO_WRAP, STATUS_ICON } from "./constants.js";
+import { wrapWords } from "./wrap.js";
 
 export function selectionKey(row: DisplayRow, index: number): string {
   if (row.kind === "comment" && row.tone !== "rule") {

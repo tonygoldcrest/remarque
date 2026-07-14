@@ -1,7 +1,7 @@
-import { highlight } from "lowlight";
+import lowlight from "lowlight";
 
-import type { HastNode, Token } from "./types";
-import { LANG_BY_EXT, SCOPE_COLORS, TOKEN_CACHE_LIMIT } from "./constants";
+import type { HastNode, Token } from "./types.js";
+import { HLJS_BY_SHIKI, LANG_BY_EXT, SCOPE_COLORS, TOKEN_CACHE_LIMIT } from "./constants.js";
 
 export function langForFile(file: string): string | null {
   const ext = file.split(".").pop()?.toLowerCase() ?? "";
@@ -24,7 +24,7 @@ function walk(nodes: HastNode[], inherited: string | undefined, out: Token[]): v
 
 function highlightTokens(code: string, lang: string): Token[] {
   try {
-    const result = highlight(lang, code);
+    const result = lowlight.highlight(HLJS_BY_SHIKI[lang] ?? lang, code);
     const out: Token[] = [];
 
     walk(result.value as unknown as HastNode[], undefined, out);

@@ -1,1 +1,1 @@
-export { FileRow } from "./file-row";
+export { FileRow } from "./file-row.js";

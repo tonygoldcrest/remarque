@@ -4,8 +4,8 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { Review } from "../src/review";
-import { JsonBackend } from "../src/store/json-backend";
+import { Review } from "../src/review/index.js";
+import { JsonBackend } from "../src/store/json-backend/index.js";
 
 function tmpRepo() {
   const dir = mkdtempSync(path.join(tmpdir(), "review-test-"));

@@ -1,13 +1,13 @@
-import { resolveAnchor } from "../anchor";
+import { resolveAnchor } from "../anchor/index.js";
 import {
   SCHEMA_VERSION,
   WORKING_TREE,
   type ResolvedThread,
   type ReviewState,
   type Thread,
-} from "../protocol";
-import type { ReviewContext, SideContentReader } from "./types";
-import { effectiveBase, sideContentReader } from "./contents";
+} from "../protocol.js";
+import type { ReviewContext, SideContentReader } from "./types.js";
+import { effectiveBase, sideContentReader } from "./contents.js";
 
 async function resolveThread(
   ctx: ReviewContext,
