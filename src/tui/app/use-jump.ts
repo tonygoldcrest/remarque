@@ -1,16 +1,16 @@
 import { useState } from "react";
 
-import { chunkStarts, seekIndex, threadStarts } from "../model/index.js";
+import { chunkStarts, seekIndex } from "../model/index.js";
 import type { DisplayRow } from "../model/index.js";
 
 interface JumpArgs {
   rows: DisplayRow[];
   onJump: (target: number) => void;
-  onFile: (dir: number) => void;
+  onThread: (dir: number) => void;
   onMiss: (notice: string) => void;
 }
 
-export function useJump({ rows, onJump, onFile, onMiss }: JumpArgs) {
+export function useJump({ rows, onJump, onThread, onMiss }: JumpArgs) {
   const [pending, setPending] = useState<"]" | "[" | null>(null);
 
   const handleKey = (ch: string, from: number): boolean => {
@@ -19,12 +19,11 @@ export function useJump({ rows, onJump, onFile, onMiss }: JumpArgs) {
 
       setPending(null);
 
-      if (ch === "c" || ch === "t") {
-        const indices = ch === "c" ? chunkStarts(rows) : threadStarts(rows);
-        const target = seekIndex(indices, from, dir);
+      if (ch === "c") {
+        const target = seekIndex(chunkStarts(rows), from, dir);
 
         if (target == null) {
-          onMiss(ch === "c" ? "no chunks in this file" : "no threads in this file");
+          onMiss("no chunks in this file");
         } else {
           onJump(target);
         }
@@ -32,8 +31,8 @@ export function useJump({ rows, onJump, onFile, onMiss }: JumpArgs) {
         return true;
       }
 
-      if (ch === "f") {
-        onFile(dir);
+      if (ch === "t") {
+        onThread(dir);
 
         return true;
       }

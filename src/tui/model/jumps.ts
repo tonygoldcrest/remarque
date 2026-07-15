@@ -6,7 +6,7 @@ function isChangeRow(row: DisplayRow | undefined): boolean {
 
 function prevLineIsChange(rows: DisplayRow[], i: number): boolean {
   for (let k = i - 1; k >= 0; k--) {
-    if (rows[k].kind === "comment") {
+    if (rows[k].kind === "comment" || rows[k].kind === "thread-separator") {
       continue;
     }
 

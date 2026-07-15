@@ -25,7 +25,7 @@ export type DisplayRow =
   | { kind: "hunk"; header: string }
   | { kind: "compose"; text: string }
   | Extract<Row, { kind: "line" }>
-  | { kind: "comment"; thread: ResolvedThread; tone: "rule"; text: string }
+  | { kind: "thread-separator"; thread: ResolvedThread; tone: "top" | "bottom"; text: string }
   | { kind: "comment"; thread: ResolvedThread; tone: "cont"; msgKey: string; text: string }
   | {
       kind: "comment";
@@ -37,6 +37,13 @@ export type DisplayRow =
       author: string;
       body: string;
     };
+
+export type SpanKind = "border" | "rule" | "gap" | "status" | "author" | "body" | "thread-line";
+
+export interface Span {
+  text: string;
+  kind: SpanKind;
+}
 
 export interface PaneInner {
   old: number;

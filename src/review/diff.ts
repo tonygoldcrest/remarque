@@ -9,7 +9,7 @@ import { sessionForRead } from "./sessions.js";
 function addedFilePatch(file: string, content: string): string {
   const header = [`diff --git a/${file} b/${file}`, "new file mode 100644"];
 
-  if (content.includes("\u0000")) {
+  if (content.includes("\x00")) {
     return [...header, `Binary files /dev/null and b/${file} differ`, ""].join("\n");
   }
 

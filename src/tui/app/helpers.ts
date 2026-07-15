@@ -6,7 +6,7 @@ import type { Focus } from "../types.js";
 import type { ComposerIntent, StatusKey } from "./types.js";
 
 function isDeleteChunk(ch: string): boolean {
-  return ch.length > 0 && [...ch].every((c) => c === "\u007F" || c === "\u0008");
+  return ch.length > 0 && [...ch].every((c) => c === "\x7f" || c === "\x08");
 }
 
 export function editValue(value: string, ch: string, key: Key): string {
@@ -33,7 +33,7 @@ export function composerIntent(
   general: boolean,
   entry: FileEntry | null,
 ): ComposerIntent {
-  if (row && row.kind === "comment" && row.tone !== "rule") {
+  if (row && row.kind === "comment") {
     return { open: { mode: "reply", threadId: row.thread.id } };
   }
 

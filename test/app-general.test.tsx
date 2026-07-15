@@ -45,11 +45,11 @@ describe("general pane", () => {
     expect(lastFrame()).toContain("app.ts");
     expect(lastFrame()).not.toContain("add a general comment");
 
-    stdin.write("\u0007");
+    stdin.write("\x07");
     await tick();
     expect(lastFrame()).toContain("add a general comment");
 
-    stdin.write("\u0007");
+    stdin.write("\x07");
     await tick();
     expect(lastFrame()).not.toContain("add a general comment");
     unmount();
@@ -71,13 +71,11 @@ describe("general pane", () => {
     const { stdin, lastFrame, unmount } = render(<App review={review} />);
     await tick();
 
-    stdin.write("\u0007");
+    stdin.write("\x07");
     await tick();
     expect(lastFrame()).toContain("add a general comment");
 
-    stdin.write("\u001B[B");
-    await tick();
-    stdin.write("\u001B[B");
+    stdin.write("\x1b[B");
     await tick();
     stdin.write("c");
     await tick();
@@ -97,7 +95,7 @@ describe("general pane", () => {
     const { stdin, lastFrame, unmount } = render(<App review={review} />);
     await tick();
 
-    stdin.write("\u0007");
+    stdin.write("\x07");
     await tick();
     stdin.write("c");
     await tick();

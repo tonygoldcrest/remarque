@@ -124,11 +124,11 @@ describe("editValue", () => {
   });
 
   it("treats a coalesced chunk of DEL bytes as that many deletions", () => {
-    expect(editValue("abcd", "\u007F\u007F\u007F", key())).toBe("a");
+    expect(editValue("abcd", "\x7f\x7f\x7f", key())).toBe("a");
   });
 
   it("never lets control characters into the value", () => {
-    expect(editValue("a", "x\u0007y\u001B", key())).toBe("axy");
+    expect(editValue("a", "x\x07y\x1b", key())).toBe("axy");
   });
 
   it("flattens pasted newlines and tabs to spaces", () => {

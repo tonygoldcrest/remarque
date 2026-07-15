@@ -125,7 +125,7 @@ describe("buildDisplayRows", () => {
       generalComments: [],
     };
     const rows = buildDisplayRows(file, state);
-    const i = rows.findIndex((r) => r.kind === "comment");
+    const i = rows.findIndex((r) => r.kind === "thread-separator");
     expect(i).toBeGreaterThan(0);
     const prev = rows[i - 1];
     expect(prev.kind === "line" && prev.right.num).toBe(2);
@@ -140,7 +140,7 @@ describe("buildDisplayRows", () => {
     };
     const rows = buildDisplayRows(file, state);
     const starts = rows.filter((r) => r.kind === "comment" && r.tone === "start");
-    const rules = rows.filter((r) => r.kind === "comment" && r.tone === "rule");
+    const rules = rows.filter((r) => r.kind === "thread-separator");
     expect(starts).toHaveLength(3);
     expect(rules).toHaveLength(2);
     expect(starts[0].kind === "comment" && starts[0].tone === "start" && starts[0].head).toBe(true);
@@ -186,7 +186,8 @@ describe("buildDisplayRows", () => {
     };
     const rows = buildDisplayRows(file, state);
     const last = rows[rows.length - 1];
-    expect(last.kind).toBe("comment");
+    expect(last.kind).toBe("thread-separator");
+    expect(rows.some((r) => r.kind === "comment")).toBe(true);
   });
 });
 
@@ -238,9 +239,7 @@ describe("row stepping and per-comment selection", () => {
       generalComments: [],
     };
     const rows = buildDisplayRows(file, state, { old: 24, new: 24 });
-    const commentRows = rows
-      .map((r, i) => ({ r, i }))
-      .filter((x) => x.r.kind === "comment" && x.r.tone !== "rule");
+    const commentRows = rows.map((r, i) => ({ r, i })).filter((x) => x.r.kind === "comment");
     expect(commentRows.length).toBeGreaterThan(1);
     const keys = new Set(commentRows.map((x) => selectionKey(x.r, x.i)));
     expect(keys.size).toBe(1);

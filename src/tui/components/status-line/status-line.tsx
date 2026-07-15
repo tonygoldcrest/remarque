@@ -38,7 +38,7 @@ export function StatusLine(props: Props): React.ReactElement {
   }
 
   const help =
-    " ↑↓ move  Tab side  ]f file  ]c/]t jump  c comment  - stage  ^G general  r resolve  x dismiss  o reopen  d delete  ^R reload  q quit";
+    " ↑↓ move  Tab side  { } file  ]/[c jump hunks ]/[t jump threads  c comment  - stage  ^G general  r resolve  x dismiss  o reopen  d delete  ^R reload  q quit";
 
   if (!props.message) {
     return <Text color={theme.hunk}>{fit(help, props.width)}</Text>;

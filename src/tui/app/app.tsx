@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { render, Text, useApp, useInput } from "ink";
 
 import type { Review } from "../../review/index.js";
@@ -9,6 +9,8 @@ import {
   computeUnits,
   fileList,
   fileSections,
+  seekIndex,
+  threadStarts,
 } from "../model/index.js";
 import { langForFile } from "../highlight/index.js";
 import { enterFullscreen } from "../screen.js";
@@ -106,10 +108,68 @@ export function App({ review }: { review: Review }): React.ReactElement {
     viewport.reset();
   };
 
+  const [threadHop, setThreadHop] = useState<number | null>(null);
+
+  const jumpToThread = (dir: number) => {
+    const indices = threadStarts(rows);
+    const from = viewport.boundedRow;
+
+    if (generalOpen) {
+      const target = seekIndex(indices, from, dir);
+
+      return target == null ? setMessage("no comments here") : viewport.jumpTo(target);
+    }
+
+    const within = dir > 0 ? indices.find((i) => i > from) : indices.filter((i) => i < from).pop();
+
+    if (within != null) {
+      return viewport.jumpTo(within);
+    }
+
+    for (let k = 1; k <= files.length; k++) {
+      const entry = files[(((fileIndex + dir * k) % files.length) + files.length) % files.length];
+
+      if (entry.total === 0) {
+        continue;
+      }
+
+      if (entry.file === currentEntry?.file) {
+        const target = seekIndex(indices, from, dir);
+
+        if (target != null) {
+          viewport.jumpTo(target);
+        }
+
+        return;
+      }
+
+      setSelectedFile(entry.file);
+      setThreadHop(dir);
+
+      return;
+    }
+
+    setMessage("no comments in this review");
+  };
+
+  useEffect(() => {
+    if (threadHop == null) {
+      return;
+    }
+
+    const indices = threadStarts(rows);
+
+    if (indices.length > 0) {
+      viewport.jumpTo(threadHop > 0 ? indices[0] : indices[indices.length - 1]);
+    }
+
+    setThreadHop(null);
+  }, [rows, threadHop]);
+
   const jump = useJump({
     rows,
     onJump: viewport.jumpTo,
-    onFile: selectFile,
+    onThread: jumpToThread,
     onMiss: setMessage,
   });
 
@@ -209,6 +269,10 @@ export function App({ review }: { review: Review }): React.ReactElement {
 
     if (key.upArrow || key.downArrow || ch === "j" || ch === "k") {
       return viewport.move(key.upArrow || ch === "k" ? -1 : 1);
+    }
+
+    if (ch === "{" || ch === "}") {
+      return selectFile(ch === "}" ? 1 : -1);
     }
 
     if (ch === "-") {

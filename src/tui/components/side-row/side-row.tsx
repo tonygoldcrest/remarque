@@ -1,10 +1,12 @@
 import React from "react";
 import { Text } from "ink";
-import { DisplayRow } from "../../model/index.js";
+import { layoutCommentCont, layoutCommentStart, layoutSeparator } from "../../model/index.js";
+import type { DisplayRow } from "../../model/index.js";
 import type { Token } from "../../highlight/index.js";
 import theme from "../../theme.js";
 import { clip, fit } from "../helpers.js";
 import { statusColor } from "./helpers.js";
+import { SpanLine } from "../span-line/index.js";
 import { CodeCell } from "../code-cell/index.js";
 
 export const SideRow = React.memo(function SideRow({
@@ -25,7 +27,7 @@ export const SideRow = React.memo(function SideRow({
   lineTokens: Token[][] | null;
 }) {
   if (row.kind === "hunk") {
-    return <Text> </Text>;
+    return null;
   }
 
   if (row.kind === "compose") {
@@ -43,38 +45,29 @@ export const SideRow = React.memo(function SideRow({
       return <Text> </Text>;
     }
 
-    const bg = selected && focused ? theme.cursorBg : undefined;
-
-    if (row.tone === "rule") {
-      return (
-        <Text backgroundColor={bg} color={theme.border} wrap="truncate">
-          {fit(clip(row.text, width), width)}
-        </Text>
-      );
-    }
-
-    if (row.tone === "cont") {
-      return (
-        <Text backgroundColor={bg} color={theme.comment} wrap="truncate">
-          {fit(clip(row.text, width), width)}
-        </Text>
-      );
-    }
-
-    const leadColor = row.head ? statusColor(row.thread.status) : theme.hunk;
-    const used = row.lead.length + row.author.length + 1 + row.body.length;
-    const pad = " ".repeat(Math.max(0, width - used));
+    const spans =
+      row.tone === "cont" ? layoutCommentCont(row, width) : layoutCommentStart(row, width);
 
     return (
-      <Text wrap="truncate">
-        <Text backgroundColor={bg} color={leadColor}>
-          {row.lead}
-        </Text>
-        <Text backgroundColor={bg} bold color={theme.comment}>
-          {row.author}
-        </Text>
-        <Text backgroundColor={bg} color={theme.comment}>{` ${row.body}${pad}`}</Text>
-      </Text>
+      <SpanLine
+        spans={spans}
+        statusHex={statusColor(row.thread.status)}
+        selected={selected && focused}
+      />
+    );
+  }
+
+  if (row.kind === "thread-separator") {
+    if (row.thread.side !== side) {
+      return <Text> </Text>;
+    }
+
+    return (
+      <SpanLine
+        spans={layoutSeparator(row, width)}
+        statusHex={statusColor(row.thread.status)}
+        selected={selected && focused}
+      />
     );
   }
 

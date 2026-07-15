@@ -7,10 +7,11 @@ import { render } from "ink-testing-library";
 
 import { App } from "../src/tui/app/index.js";
 import type { Review } from "../src/review/index.js";
-import type { ReviewState, StructuredDiff } from "../src/protocol.js";
+import type { ResolvedThread, ReviewState, StructuredDiff } from "../src/protocol.js";
 
 const patchA = ["@@ -1,1 +1,1 @@", "-a", "+AAA_MARKER", ""].join("\n");
-const patchB = ["@@ -1,1 +1,1 @@", "-b", "+BBB_MARKER", ""].join("\n");
+const linesB = Array.from({ length: 50 }, (_, i) => `+line ${i + 1}`);
+const patchB = ["@@ -0,0 +1,50 @@", ...linesB, ""].join("\n");
 
 const diff: StructuredDiff = {
   base: "HEAD",
@@ -21,44 +22,51 @@ const diff: StructuredDiff = {
   ],
 };
 
-const emptyState: ReviewState = {
+const threadOnB: ResolvedThread = {
+  id: "t1",
+  sessionId: "s",
+  file: "b.txt",
+  side: "new",
+  anchor: { blobSha: "x", line: 40, endLine: 40, lineText: "", before: [], after: [] },
+  status: "open",
+  resolution: null,
+  messages: [{ id: "m", author: "human", body: "deep comment", at: "t" }],
+  createdAt: "t",
+  updatedAt: "t",
+  currentLine: 40,
+  currentEndLine: 40,
+};
+
+const state: ReviewState = {
   schemaVersion: 1,
   session: null,
-  threads: [],
+  threads: [threadOnB],
   generalComments: [],
 };
 
 const tick = () => new Promise((r) => setTimeout(r, 50));
 
-describe("file selection", () => {
-  it("stays on the same file when staging reorders the list", async () => {
-    let staging: { staged: string[]; unstaged: string[] } = {
-      staged: [],
-      unstaged: ["a.txt", "b.txt"],
-    };
+describe("thread jumps across files", () => {
+  it("lands on the thread when the next comment lives in another file", async () => {
     const review = {
       diffFiles: async () => diff,
-      state: async () => emptyState,
-      stagingStatus: async () => staging,
+      state: async () => state,
+      stagingStatus: async () => ({ staged: [], unstaged: ["a.txt", "b.txt"] }),
       location: () => path.join(mkdtempSync(path.join(tmpdir(), "remarque-test-")), "store"),
     } as unknown as Review;
 
     const { stdin, lastFrame, unmount } = render(<App review={review} />);
     await tick();
     expect(lastFrame()).toContain("AAA_MARKER");
+    expect(lastFrame()).not.toContain("deep comment");
 
-    stdin.write("}");
+    stdin.write("]");
     await tick();
-    expect(lastFrame()).toContain("BBB_MARKER");
-
-    staging = { staged: ["b.txt"], unstaged: ["a.txt"] };
-
-    stdin.write("\x12");
+    stdin.write("t");
     await tick();
 
-    expect(lastFrame()).toContain("Staged (1):");
-    expect(lastFrame()).toContain("BBB_MARKER");
-    expect(lastFrame()).not.toContain("AAA_MARKER");
+    expect(lastFrame()).toContain("line 40");
+    expect(lastFrame()).toContain("deep comment");
     unmount();
   });
 });

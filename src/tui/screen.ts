@@ -1,13 +1,13 @@
 import theme from "./theme.js";
 
-const ALT_SCREEN_ON = "[?1049h";
-const ALT_SCREEN_OFF = "[?1049l";
-const HIDE_CURSOR = "[?25l";
-const SHOW_CURSOR = "[?25h";
-const SET_BG = "]11;" + theme.appBg + "";
-const RESET_BG = "]111";
-const BEGIN_SYNC = "[?2026h";
-const END_SYNC = "[?2026l";
+const ALT_SCREEN_ON = "\x1b[?1049h";
+const ALT_SCREEN_OFF = "\x1b[?1049l";
+const HIDE_CURSOR = "\x1b[?25l";
+const SHOW_CURSOR = "\x1b[?25h";
+const SET_BG = "\x1b]11;" + theme.appBg + "\x07";
+const RESET_BG = "\x1b]111\x07";
+const BEGIN_SYNC = "\x1b[?2026h";
+const END_SYNC = "\x1b[?2026l";
 
 type WriteArgs = [chunk: string | Uint8Array, ...rest: unknown[]];
 
@@ -42,7 +42,13 @@ export function enterFullscreen(): () => void {
     original(RESET_BG + SHOW_CURSOR + ALT_SCREEN_OFF);
   };
 
+  const terminate = (): void => {
+    restore();
+    process.exit(143);
+  };
+
   process.once("exit", restore);
+  process.once("SIGTERM", terminate);
 
   return restore;
 }

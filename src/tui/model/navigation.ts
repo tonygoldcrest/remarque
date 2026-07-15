@@ -12,14 +12,14 @@ export function computeUnits(rows: DisplayRow[]): { units: Unit[]; unitOf: numbe
       unitOf[i] = units.length;
       units.push({ first: i, last: i });
       i += 1;
-    } else if (row.kind === "comment" && row.tone !== "rule") {
+    } else if (row.kind === "comment") {
       const key = row.msgKey;
       const first = i;
 
       while (i < rows.length) {
         const next = rows[i];
 
-        if (next.kind !== "comment" || next.tone === "rule" || next.msgKey !== key) {
+        if (next.kind !== "comment" || next.msgKey !== key) {
           break;
         }
 
@@ -84,6 +84,18 @@ function nearestUnit(units: Unit[], row: number): number {
   }
 
   return best;
+}
+
+export function selectableRow(units: Unit[], unitOf: number[], row: number): number {
+  if (units.length === 0) {
+    return row;
+  }
+
+  if (row >= 0 && row < unitOf.length && unitOf[row] >= 0) {
+    return row;
+  }
+
+  return units[nearestUnit(units, row)].first;
 }
 
 function scrollOverflowingDown(

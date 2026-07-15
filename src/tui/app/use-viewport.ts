@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { navigate } from "../model/index.js";
+import { navigate, selectableRow } from "../model/index.js";
 import type { DisplayRow, Unit, Viewport } from "../model/index.js";
 
 interface ViewportArgs {
@@ -12,7 +12,8 @@ interface ViewportArgs {
 
 export function useViewport({ rows, units, unitOf, contentH }: ViewportArgs) {
   const [pos, setPos] = useState<Viewport>({ row: 0, top: 0 });
-  const boundedRow = Math.min(pos.row, Math.max(0, rows.length - 1));
+  const clamped = Math.min(pos.row, Math.max(0, rows.length - 1));
+  const boundedRow = selectableRow(units, unitOf, clamped);
   const maxTop = Math.max(0, rows.length - contentH);
 
   useEffect(() => {
@@ -26,7 +27,12 @@ export function useViewport({ rows, units, unitOf, contentH }: ViewportArgs) {
 
   const reset = () => setPos({ row: 0, top: 0 });
 
-  const move = (dir: number) => setPos((p) => navigate(rows, units, unitOf, p, dir, contentH));
+  const move = (dir: number) =>
+    setPos((p) => {
+      const from = selectableRow(units, unitOf, Math.min(p.row, Math.max(0, rows.length - 1)));
+
+      return navigate(rows, units, unitOf, { row: from, top: p.top }, dir, contentH);
+    });
 
   const jumpTo = (target: number) => {
     const top = Math.max(0, Math.min(target - Math.floor(contentH / 2), maxTop));

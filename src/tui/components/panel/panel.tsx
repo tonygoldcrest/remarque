@@ -72,7 +72,9 @@ export function Panel(props: Props): React.ReactElement {
     0,
     Math.min(props.scrollTop ?? 0, Math.max(0, rows.length - contentH)),
   );
-  const visible = rows.slice(scrollTop, scrollTop + contentH);
+  const visible = rows
+    .slice(scrollTop, scrollTop + contentH)
+    .map((row, i) => ({ row, index: scrollTop + i }));
   const lang = props.currentFile ? langForFile(props.currentFile) : null;
   const cursorGroup = rows[rowIndex] ? selectionKey(rows[rowIndex], rowIndex) : null;
   const isSelected = (row: DisplayRow, idx: number) =>
@@ -102,13 +104,13 @@ export function Panel(props: Props): React.ReactElement {
             borderColor={theme.borderActive}
             flexDirection="column"
           >
-            {visible.map((row, i) => (
+            {visible.map(({ row, index }) => (
               <SideRow
-                key={scrollTop + i}
+                key={index}
                 row={row}
                 width={removedW + addedW - 2}
                 side="new"
-                selected={isSelected(row, scrollTop + i)}
+                selected={isSelected(row, index)}
                 focused
                 lang={null}
                 lineTokens={null}
@@ -126,18 +128,20 @@ export function Panel(props: Props): React.ReactElement {
               {rows.length === 0 ? (
                 <Text color={theme.hunk}>(no changes)</Text>
               ) : (
-                visible.map((row, i) => (
-                  <SideRow
-                    key={scrollTop + i}
-                    row={row}
-                    width={removedW - 2}
-                    side="old"
-                    selected={isSelected(row, scrollTop + i)}
-                    focused={focus === "removed"}
-                    lang={lang}
-                    lineTokens={props.highlights?.old ?? null}
-                  />
-                ))
+                visible
+                  .filter(({ row }) => row.kind !== "hunk")
+                  .map(({ row, index }) => (
+                    <SideRow
+                      key={index}
+                      row={row}
+                      width={removedW - 2}
+                      side="old"
+                      selected={isSelected(row, index)}
+                      focused={focus === "removed"}
+                      lang={lang}
+                      lineTokens={props.highlights?.old ?? null}
+                    />
+                  ))
               )}
             </Box>
 
@@ -150,18 +154,20 @@ export function Panel(props: Props): React.ReactElement {
               {rows.length === 0 ? (
                 <Text color={theme.hunk}> </Text>
               ) : (
-                visible.map((row, i) => (
-                  <SideRow
-                    key={scrollTop + i}
-                    row={row}
-                    width={addedW - 2}
-                    side="new"
-                    selected={isSelected(row, scrollTop + i)}
-                    focused={focus === "added"}
-                    lang={lang}
-                    lineTokens={props.highlights?.new ?? null}
-                  />
-                ))
+                visible
+                  .filter(({ row }) => row.kind !== "hunk")
+                  .map(({ row, index }) => (
+                    <SideRow
+                      key={index}
+                      row={row}
+                      width={addedW - 2}
+                      side="new"
+                      selected={isSelected(row, index)}
+                      focused={focus === "added"}
+                      lang={lang}
+                      lineTokens={props.highlights?.new ?? null}
+                    />
+                  ))
               )}
             </Box>
           </>

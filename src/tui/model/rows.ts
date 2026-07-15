@@ -8,10 +8,11 @@ import type {
 import { parsePatch } from "../parse/index.js";
 import type { DisplayRow, PaneInner } from "./types.js";
 import { COMPOSE_HINT, GENERAL_FILE, NO_WRAP, STATUS_ICON } from "./constants.js";
+import { contContentWidth, startContentWidth } from "./layout.js";
 import { wrapWords } from "./wrap.js";
 
 export function selectionKey(row: DisplayRow, index: number): string {
-  if (row.kind === "comment" && row.tone !== "rule") {
+  if (row.kind === "comment") {
     return `m:${row.msgKey}`;
   }
 
@@ -25,12 +26,11 @@ function composeMessage(
   isThreadStart: boolean,
   width: number,
 ): void {
-  const lead = isThreadStart ? `${STATUS_ICON[thread.status]} ` : "│ ";
+  const lead = isThreadStart ? `${STATUS_ICON[thread.status]}` : "";
   const author = `${message.author}:`;
-  const cont = "│   ";
   const w = Math.max(8, width);
-  const firstWidth = Math.max(1, w - lead.length - author.length - 1);
-  const chunks = wrapWords(message.body, firstWidth, Math.max(1, w - cont.length));
+  const firstWidth = Math.max(1, startContentWidth(w, lead) - author.length - 1);
+  const chunks = wrapWords(message.body, firstWidth, contContentWidth(w));
   const msgKey = `${thread.id}:${message.id}`;
 
   out.push({
@@ -45,24 +45,18 @@ function composeMessage(
   });
 
   for (let i = 1; i < chunks.length; i++) {
-    out.push({ kind: "comment", thread, tone: "cont", msgKey, text: cont + chunks[i] });
+    out.push({ kind: "comment", thread, tone: "cont", msgKey, text: chunks[i] });
   }
 }
 
-function pushRule(out: DisplayRow[], thread: ResolvedThread, width: number): void {
-  out.push({ kind: "comment", thread, text: "─".repeat(Math.max(1, width)), tone: "rule" });
+function pushRule(out: DisplayRow[], thread: ResolvedThread, tone: "top" | "bottom"): void {
+  out.push({ kind: "thread-separator", thread, text: "", tone });
 }
 
 function emitThread(out: DisplayRow[], thread: ResolvedThread, width: number): void {
-  const prev = out[out.length - 1];
-  const prevIsRule = !!prev && prev.kind === "comment" && prev.tone === "rule";
-
-  if (!prevIsRule) {
-    pushRule(out, thread, width);
-  }
-
+  pushRule(out, thread, "top");
   thread.messages.forEach((message, i) => composeMessage(out, thread, message, i === 0, width));
-  pushRule(out, thread, width);
+  pushRule(out, thread, "bottom");
 }
 
 function generalAsThread(g: GeneralComment): ResolvedThread {
